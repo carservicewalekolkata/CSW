@@ -46,7 +46,7 @@ const SiteHeader = () => {
         <div className="flex items-center gap-4">
           <Link to="/" className="flex items-center gap-3 text-lg font-semibold text-indigo-950">
             <img
-              src="/images/logo-header.svg"
+              src="/images/logos/primary/logo-header.svg"
               alt="Car Service Wale"
               className="h-10 w-auto"
               loading="lazy"
@@ -169,7 +169,7 @@ const SiteHeader = () => {
             <Dialog.Panel className="fixed inset-y-0 right-0 flex w-full max-w-sm flex-col gap-6 overflow-y-auto bg-white px-6 py-6 shadow-xl">
               <div className="flex items-center justify-between">
                 <Link to="/" className="flex items-center gap-3 text-lg font-semibold text-indigo-950" onClick={() => setMobileOpen(false)}>
-                  <img src="/images/logo-header.svg" alt="Car Service Wale" className="h-10 w-auto" />
+                  <img src="/images/logos/primary/logo-header.svg" alt="Car Service Wale" className="h-10 w-auto" />
                 </Link>
                 <button
                   type="button"

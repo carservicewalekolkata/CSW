@@ -51,7 +51,7 @@ const AboutPage = () => {
           content="Learn how Car Service Wale transforms automobile care with transparent pricing, trained technicians, and genuine spare parts."
         />
       </Helmet>
-      <section className="relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url(/images/banner-bg.jpg)' }}>
+      <section className="relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url(/images/backgrounds/banner-bg.jpg)' }}>
         <div className="absolute inset-0 bg-indigo-950/75" />
         <div className="container-cs relative z-10 flex flex-col gap-10 py-20 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-5 text-white">
@@ -62,7 +62,7 @@ const AboutPage = () => {
               and cleaning—powered by genuine spares and expert technicians.
             </p>
           </div>
-          <img src="/images/service-banner.svg" alt="Service" className="w-full max-w-md drop-shadow-2xl" loading="lazy" />
+          <img src="/images/hero/service-banner.svg" alt="Service" className="w-full max-w-md drop-shadow-2xl" loading="lazy" />
         </div>
       </section>
 
@@ -98,7 +98,7 @@ const AboutPage = () => {
             </p>
           </div>
           <div className="overflow-hidden rounded-3xl shadow-card">
-            <img src="/images/benefit-bg.jpg" alt="Workshop" className="h-full w-full object-cover" loading="lazy" />
+            <img src="/images/backgrounds/benefit-bg.jpg" alt="Workshop" className="h-full w-full object-cover" loading="lazy" />
           </div>
         </div>
       </section>

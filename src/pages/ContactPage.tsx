@@ -11,7 +11,7 @@ const ContactPage = () => {
           content="Need help with bookings or custom service plans? Contact Car Service Wale for quick assistance."
         />
       </Helmet>
-      <section className="relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url(/images/banner-bg.jpg)' }}>
+      <section className="relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url(/images/backgrounds/banner-bg.jpg)' }}>
         <div className="absolute inset-0 bg-indigo-950/75" />
         <div className="container-cs relative z-10 py-20 text-white">
           <div className="max-w-3xl space-y-5">

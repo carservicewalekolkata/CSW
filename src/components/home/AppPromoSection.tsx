@@ -12,8 +12,18 @@ const AppPromoSection = ({ data }: AppPromoSectionProps) => {
           <h2 className="text-3xl font-bold leading-tight text-white">{data.title}</h2>
           <p className="text-white/80">{data.description}</p>
           <div className="flex flex-wrap items-center gap-4">
-            <img src="/images/playStore.svg" alt="Get it on Google Play" className="h-14 w-auto" loading="lazy" />
-            <img src="/images/app-store.svg" alt="Download on the App Store" className="h-14 w-auto" loading="lazy" />
+            <img
+              src="/images/logos/app-stores/playStore.svg"
+              alt="Get it on Google Play"
+              className="h-14 w-auto"
+              loading="lazy"
+            />
+            <img
+              src="/images/logos/app-stores/app-store.svg"
+              alt="Download on the App Store"
+              className="h-14 w-auto"
+              loading="lazy"
+            />
           </div>
           <form className="mt-6 grid gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur">
             <label className="text-sm font-medium text-white">Get the download link</label>

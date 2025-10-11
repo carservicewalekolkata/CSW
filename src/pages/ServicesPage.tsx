@@ -15,7 +15,7 @@ const ServicesPage = () => {
           content="Browse doorstep car servicing, maintenance packages, emergency support, and smart add-ons tailored for your vehicle."
         />
       </Helmet>
-      <section className="relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url(/images/banner-bg.jpg)' }}>
+      <section className="relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url(/images/backgrounds/banner-bg.jpg)' }}>
         <div className="absolute inset-0 bg-indigo-950/75" />
         <div className="container-cs relative z-10 flex flex-col gap-10 py-20 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-5 text-white">
@@ -35,7 +35,7 @@ const ServicesPage = () => {
             </div>
           </div>
           <img
-            src="/images/service-banner.svg"
+            src="/images/hero/service-banner.svg"
             alt="Service banner"
             className="relative z-10 mx-auto w-full max-w-md drop-shadow-2xl"
             loading="lazy"

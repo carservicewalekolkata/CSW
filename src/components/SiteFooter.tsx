@@ -30,7 +30,7 @@ const SiteFooter = () => {
       <div className="container-cs grid gap-12 py-16 lg:grid-cols-3">
         <div className="space-y-4">
           <Link to="/" className="inline-flex items-center gap-3">
-            <img src="/images/footer-logo.svg" alt="Car Service Wale" className="h-12 w-auto" />
+            <img src="/images/logos/primary/footer-logo.svg" alt="Car Service Wale" className="h-12 w-auto" />
           </Link>
           <p className="max-w-md text-sm text-slate-600">
             Car Service Wale is your one-stop partner for preventive maintenance, emergency repairs, insurance jobs,
@@ -58,8 +58,8 @@ const SiteFooter = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <img src="/images/playStore.svg" alt="Download on Google Play" className="h-12 w-auto" />
-            <img src="/images/app-store.svg" alt="Download on App Store" className="h-12 w-auto" />
+            <img src="/images/logos/app-stores/playStore.svg" alt="Download on Google Play" className="h-12 w-auto" />
+            <img src="/images/logos/app-stores/app-store.svg" alt="Download on App Store" className="h-12 w-auto" />
           </div>
         </div>
 

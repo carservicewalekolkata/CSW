@@ -5,51 +5,51 @@
     "description": "Look no further! Get a free personalized quote for your car and enjoy genuine spares, transparent pricing, and doorstep pick-up.",
     "ctaText": "Get a Quote",
     "brands": [
-      { "name": "Audi", "logo": "/images/brand-1.svg" },
-      { "name": "BMW", "logo": "/images/brand-2.svg" },
-      { "name": "Honda", "logo": "/images/brand-3.svg" },
-      { "name": "Hyundai", "logo": "/images/brand-4.svg" },
-      { "name": "Maruti Suzuki", "logo": "/images/brand-5.svg" }
+      { "name": "Audi", "logo": "/images/logos/brands/brand-1.svg" },
+      { "name": "BMW", "logo": "/images/logos/brands/brand-2.svg" },
+      { "name": "Honda", "logo": "/images/logos/brands/brand-3.svg" },
+      { "name": "Hyundai", "logo": "/images/logos/brands/brand-4.svg" },
+      { "name": "Maruti Suzuki", "logo": "/images/logos/brands/brand-5.svg" }
     ]
   },
   "usp": [
     {
-      "icon": "/images/steering-wheel.svg",
+      "icon": "/images/icons/general/steering-wheel.svg",
       "title": "Free Pick & Drop",
       "description": "Relax while our logistics crew handles vehicle pick-up and drop-off."
     },
     {
-      "icon": "/images/plan.svg",
+      "icon": "/images/icons/general/plan.svg",
       "title": "Plan Your Service",
       "description": "Choose from curated packages or custom jobs at your convenience."
     },
     {
-      "icon": "/images/real-time.svg",
+      "icon": "/images/icons/general/real-time.svg",
       "title": "Real-Time Updates",
       "description": "Stay informed with live job cards and technician notes."
     },
     {
-      "icon": "/images/pricing.svg",
+      "icon": "/images/icons/general/pricing.svg",
       "title": "Honest Pricing",
       "description": "Upfront, itemised estimates with no hidden charges."
     }
   ],
   "services": {
     "primary": [
-      { "name": "Periodic Service", "icon": "/images/clutch-disc.svg", "href": "/services" },
-      { "name": "Engine Repair", "icon": "/images/s2.svg", "href": "/services" },
-      { "name": "Electrical & Diagnostics", "icon": "/images/s3.svg", "href": "/services" },
-      { "name": "Denting & Painting", "icon": "/images/s4.svg", "href": "/services" },
-      { "name": "Wheel Care", "icon": "/images/t-s-4.svg", "href": "/services" },
-      { "name": "AC Service", "icon": "/images/t-s-6.svg", "href": "/services" }
+      { "name": "Periodic Service", "icon": "/images/icons/services/clutch-disc.svg", "href": "/services" },
+      { "name": "Engine Repair", "icon": "/images/icons/services/s2.svg", "href": "/services" },
+      { "name": "Electrical & Diagnostics", "icon": "/images/icons/services/s3.svg", "href": "/services" },
+      { "name": "Denting & Painting", "icon": "/images/icons/services/s4.svg", "href": "/services" },
+      { "name": "Wheel Care", "icon": "/images/icons/services/t-s-4.svg", "href": "/services" },
+      { "name": "AC Service", "icon": "/images/icons/services/t-s-6.svg", "href": "/services" }
     ],
     "custom": [
-      { "name": "Clutch Service", "icon": "/images/clutch-disc.svg", "href": "/services" },
-      { "name": "Gearbox", "icon": "/images/s2.svg", "href": "/services" },
-      { "name": "Spark Plug", "icon": "/images/s3.svg", "href": "/services" },
-      { "name": "Denting Painting", "icon": "/images/s4.svg", "href": "/services" },
-      { "name": "Wheel Service", "icon": "/images/t-s-4.svg", "href": "/services" },
-      { "name": "AC Service", "icon": "/images/t-s-6.svg", "href": "/services" }
+      { "name": "Clutch Service", "icon": "/images/icons/services/clutch-disc.svg", "href": "/services" },
+      { "name": "Gearbox", "icon": "/images/icons/services/s2.svg", "href": "/services" },
+      { "name": "Spark Plug", "icon": "/images/icons/services/s3.svg", "href": "/services" },
+      { "name": "Denting Painting", "icon": "/images/icons/services/s4.svg", "href": "/services" },
+      { "name": "Wheel Service", "icon": "/images/icons/services/t-s-4.svg", "href": "/services" },
+      { "name": "AC Service", "icon": "/images/icons/services/t-s-6.svg", "href": "/services" }
     ]
   },
   "costComparisons": [
@@ -89,17 +89,17 @@
   ],
   "whyUs": [
     {
-      "icon": "/images/w-csw1.svg",
+      "icon": "/images/illustrations/workflow/w-csw1.svg",
       "title": "100% Genuine OEM/OES Spares",
       "description": "Certified suppliers and audited inventory ensure every replacement part is original."
     },
     {
-      "icon": "/images/w-csw2.svg",
+      "icon": "/images/illustrations/workflow/w-csw2.svg",
       "title": "Highly-Skilled Mechanics",
       "description": "Factory-trained technicians specialising in multi-brand diagnostics."
     },
     {
-      "icon": "/images/w-csw3.svg",
+      "icon": "/images/illustrations/workflow/w-csw3.svg",
       "title": "Live Service Tracking",
       "description": "Track every milestone with photos, videos, and approvals within the app."
     }
@@ -148,42 +148,42 @@
   ],
   "process": [
     {
-      "icon": "/images/w-d-1.svg",
+      "icon": "/images/illustrations/why-us/w-d-1.svg",
       "description": "Comprehensive diagnostics isolate the root cause of every issue."
     },
     {
-      "icon": "/images/w-d-2.svg",
+      "icon": "/images/illustrations/why-us/w-d-2.svg",
       "description": "Skilled mechanics execute repairs with precision and genuine spares."
     },
     {
-      "icon": "/images/w-d-3.svg",
+      "icon": "/images/illustrations/why-us/w-d-3.svg",
       "description": "Post-service quality checks ensure every parameter exceeds standards."
     },
     {
-      "icon": "/images/w-d-4.svg",
+      "icon": "/images/illustrations/why-us/w-d-4.svg",
       "description": "Convenient digital payments via UPI, cards, net banking, and wallets."
     }
   ],
   "brandLogos": [
-    "/images/brand-1.svg",
-    "/images/brand-2.svg",
-    "/images/brand-3.svg",
-    "/images/brand-4.svg",
-    "/images/brand-5.svg",
-    "/images/brand-6.svg",
-    "/images/brand-7.svg",
-    "/images/brand-8.svg",
-    "/images/brand-9.svg",
-    "/images/brand-10.svg",
-    "/images/brand-11.svg",
-    "/images/brand-12.svg",
-    "/images/brand-13.svg",
-    "/images/brand-14.svg",
-    "/images/brand-15.svg"
+    "/images/logos/brands/brand-1.svg",
+    "/images/logos/brands/brand-2.svg",
+    "/images/logos/brands/brand-3.svg",
+    "/images/logos/brands/brand-4.svg",
+    "/images/logos/brands/brand-5.svg",
+    "/images/logos/brands/brand-6.svg",
+    "/images/logos/brands/brand-7.svg",
+    "/images/logos/brands/brand-8.svg",
+    "/images/logos/brands/brand-9.svg",
+    "/images/logos/brands/brand-10.svg",
+    "/images/logos/brands/brand-11.svg",
+    "/images/logos/brands/brand-12.svg",
+    "/images/logos/brands/brand-13.svg",
+    "/images/logos/brands/brand-14.svg",
+    "/images/logos/brands/brand-15.svg"
   ],
   "appPromo": {
     "title": "We are just one tap away",
     "description": "This app is available for your smartphone. Track jobs, approve estimates, and chat with our support team.",
-    "image": "/images/mobile.svg"
+    "image": "/images/icons/general/mobile.svg"
   }
 }

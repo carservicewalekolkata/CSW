@@ -38,7 +38,7 @@ const WhyUsSection = ({ items }: WhyUsSectionProps) => {
         </div>
         <div className="relative hidden lg:block">
           <div className="absolute -left-16 top-10 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
-          <img src="/images/car-image.svg" alt="Car service" className="relative z-10 w-full" loading="lazy" />
+          <img src="/images/hero/car-image.svg" alt="Car service" className="relative z-10 w-full" loading="lazy" />
         </div>
       </div>
     </section>

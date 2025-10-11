@@ -31,7 +31,7 @@ const TestimonialSection = ({ items }: TestimonialSectionProps) => {
                 <div className="card-surface h-full rounded-3xl bg-white p-8">
                   <div className="flex items-start gap-6">
                     <img
-                      src="/images/t-u-image.svg"
+                      src="/images/icons/testimonials/t-u-image.svg"
                       alt={item.name}
                       className="h-20 w-20 flex-shrink-0 rounded-full border border-slate-100 bg-brand-50"
                       loading="lazy"

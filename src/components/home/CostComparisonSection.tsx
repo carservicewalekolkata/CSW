@@ -12,7 +12,7 @@ const variantClasses: Record<HomeContent['costComparisons'][number]['variant'], 
 
 const CostComparisonSection = ({ data }: CostComparisonSectionProps) => {
   return (
-    <section className="relative overflow-hidden py-20" style={{ backgroundImage: 'url(/images/comparability-bg.jpg)' }}>
+    <section className="relative overflow-hidden py-20" style={{ backgroundImage: 'url(/images/backgrounds/comparability-bg.jpg)' }}>
       <div className="absolute inset-0 bg-indigo-950/85" />
       <div className="container-cs relative z-10 space-y-10 text-white">
         <div className="max-w-2xl">

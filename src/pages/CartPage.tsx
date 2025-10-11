@@ -9,7 +9,7 @@ const cartItems = [
     description: 'Engine oil, filter replacement, 40-point inspection',
     price: 2091,
     quantity: 1,
-    image: '/images/service-image.jpg'
+    image: '/images/hero/service-image.jpg'
   },
   {
     id: 'csw-002',
@@ -17,7 +17,7 @@ const cartItems = [
     description: 'Evaporator cleansing and fragrance add-on',
     price: 899,
     quantity: 1,
-    image: '/images/t-s-6.svg'
+    image: '/images/icons/services/t-s-6.svg'
   }
 ];
 

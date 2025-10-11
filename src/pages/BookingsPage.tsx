@@ -59,14 +59,19 @@ const BookingsPage = () => {
 
                   <div className="mt-6 grid gap-4 md:grid-cols-2">
                     <div className="flex items-center gap-4">
-                      <img src="/images/m-car.svg" alt={booking.vehicle} className="h-14 w-14" loading="lazy" />
+                      <img src="/images/hero/m-car.svg" alt={booking.vehicle} className="h-14 w-14" loading="lazy" />
                       <div>
                         <p className="text-base font-semibold text-indigo-950">{booking.vehicle}</p>
                         <p className="text-sm text-slate-500">Fuel: {booking.fuel}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <img src="/images/service-image.jpg" alt={booking.service} className="h-14 w-14 rounded-xl object-cover" loading="lazy" />
+                      <img
+                        src="/images/hero/service-image.jpg"
+                        alt={booking.service}
+                        className="h-14 w-14 rounded-xl object-cover"
+                        loading="lazy"
+                      />
                       <div>
                         <p className="text-sm font-semibold text-indigo-950">{booking.service}</p>
                         <p className="text-xs text-slate-500">Doorstep pick-up &amp; drop included</p>

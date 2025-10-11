@@ -15,7 +15,7 @@ export const servicePackages: ServicePackage[] = [
     price: 2091,
     duration: '6 hrs',
     description: 'Perfect for periodic maintenance with genuine consumables and a 50-point inspection.',
-    image: '/images/service-image.jpg',
+    image: '/images/hero/service-image.jpg',
     inclusions: [
       'Exterior foam wash',
       'Engine oil replacement',
@@ -34,7 +34,7 @@ export const servicePackages: ServicePackage[] = [
     price: 3299,
     duration: '8 hrs',
     description: 'Adds comprehensive diagnostics and brake, suspension, and electrical system tune-up.',
-    image: '/images/service-image.jpg',
+    image: '/images/hero/service-image.jpg',
     inclusions: [
       'All Basic Service inclusions',
       'Comprehensive brake inspection',
@@ -51,7 +51,7 @@ export const servicePackages: ServicePackage[] = [
     price: 4799,
     duration: '10 hrs',
     description: 'Ideal for annual maintenance including deep cleaning and preventive replacements.',
-    image: '/images/service-image.jpg',
+    image: '/images/hero/service-image.jpg',
     inclusions: [
       'All Standard Service inclusions',
       'AC disinfectant treatment',
