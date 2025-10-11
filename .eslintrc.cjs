@@ -29,6 +29,11 @@ module.exports = {
     react: {
       version: 'detect'
     },
+    'import/resolver': {
+      typescript: {
+        project: ['./tsconfig.json']
+      }
+    },
     tailwindcss: {
       callees: ['cn'],
       config: 'tailwind.config.js'

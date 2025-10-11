@@ -26,9 +26,12 @@ const AppPromoSection = ({ data }: AppPromoSectionProps) => {
             />
           </div>
           <form className="mt-6 grid gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur">
-            <label className="text-sm font-medium text-white">Get the download link</label>
+            <label htmlFor="app-promo-phone" className="text-sm font-medium text-white">
+              Get the download link
+            </label>
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
+                id="app-promo-phone"
                 type="tel"
                 placeholder="+91 Enter your mobile number"
                 className="w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-white placeholder:text-white/50 focus:border-brand-200 focus:outline-none"
