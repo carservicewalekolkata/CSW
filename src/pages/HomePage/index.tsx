@@ -1,15 +1,14 @@
 import { Helmet } from 'react-helmet-async';
 import { useHomeContent } from '@/hooks/useHomeContent';
-import HeroSection from '@/components/home/HeroSection';
-import USPSection from '@/components/home/USPSection';
-import ServiceSection from '@/components/home/ServiceSection';
-import CostComparisonSection from '@/components/home/CostComparisonSection';
-import WhyUsSection from '@/components/home/WhyUsSection';
-import TestimonialSection from '@/components/home/TestimonialSection';
-import BenefitsSection from '@/components/home/BenefitsSection';
-import ProcessSection from '@/components/home/ProcessSection';
-import BrandGrid from '@/components/home/BrandGrid';
-import AppPromoSection from '@/components/home/AppPromoSection';
+import CostComparisonSection from './CostComparisonSection';
+import HeroSection from './HeroSection';
+import ServiceSection from './ServiceSection';
+import USPSection from './USPSection';
+import WhyUsSection from './WhyUsSection';
+import TestimonialSection from './TestimonialSection';
+import BenefitsSection from './BenefitsSection';
+import ProcessSection from './ProcessSection';
+import BrandGrid from './BrandGrid';
 
 const HomePage = () => {
   const { data, isLoading, isError, error } = useHomeContent();
@@ -47,7 +46,6 @@ const HomePage = () => {
           <BenefitsSection items={data.benefits} />
           <ProcessSection items={data.process} />
           <BrandGrid logos={data.brandLogos} />
-          <AppPromoSection data={data.appPromo} />
         </>
       )}
     </>
