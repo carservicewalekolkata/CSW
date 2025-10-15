@@ -7,8 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 22
+  NODE_VERSION: 20
   APP_NAME: csw-dev
+  RESOURCE_GROUP: cswapp-rg
 
 jobs:
   quality-check:
@@ -29,7 +30,7 @@ jobs:
       - name: Validate backend URL secret
         run: |
           if [ -z "$VITE_BACKEND_URL" ]; then
-            echo "Missing secret VITE_BACKEND_URL (sets VITE_BACKEND_URL)."
+            echo "Missing secret VITE_BACKEND_URL."
             exit 1
           fi
 
@@ -61,18 +62,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Ensure backend URL app setting
-        uses: azure/appservice-settings@v1
+      - name: Azure Login (OIDC / Service Principal)
+        uses: azure/login@v2
         with:
-          app-name: ${{ env.APP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DEV }}
-          app-settings-json: |
-            [
-              {
-                "name": "VITE_BACKEND_URL",
-                "value": "${{ secrets.VITE_BACKEND_URL }}"
-              }
-            ]
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Configure Azure App Service
+        run: |
+          if [ -z "${{ secrets.VITE_BACKEND_URL }}" ]; then
+            echo "Missing secret VITE_BACKEND_URL."
+            exit 1
+          fi
+
+          az webapp config appsettings set \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.APP_NAME }} \
+            --settings VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }} \
+            >/dev/null
+
+          az webapp config set \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.APP_NAME }} \
+            --startup-file "pm2 serve /home/site/wwwroot --no-daemon --spa" \
+            --linux-fx-version "NODE|20-lts" \
+            >/dev/null
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -81,8 +94,12 @@ jobs:
           path: dist
 
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.APP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DEV }}
-          package: ./dist
+        run: |
+          cd dist
+          zip -r ../app.zip .
+          cd ..
+          az webapp deploy \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.APP_NAME }} \
+            --src-path ./app.zip \
+            --type zip
