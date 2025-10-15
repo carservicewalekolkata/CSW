@@ -87,10 +87,14 @@ jobs:
 
       - name: Deploy to Azure Web App (Production)
         run: |
+          cd dist
+          zip -r ../app.zip .
+          cd ..
           az webapp deploy \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --name ${{ env.APP_NAME }} \
-            --src-path ./dist
+            --src-path ./app.zip \
+            --type zip
 
       - name: Output Live URL
         run: |
