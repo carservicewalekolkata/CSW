@@ -38,14 +38,14 @@ const HomePage = () => {
       {data && (
         <>
           <HeroSection data={data.hero} />
-          <USPSection items={data.usp} />
-          <ServiceSection data={data.services} />
-          <CostComparisonSection data={data.costComparisons} />
-          <WhyUsSection items={data.whyUs} />
-          <TestimonialSection items={data.testimonials} />
-          <BenefitsSection items={data.benefits} />
-          <ProcessSection items={data.process} />
-          <BrandGrid logos={data.brandLogos} />
+          {/* <USPSection items={data.usp} /> */}
+          {/* <ServiceSection data={data.services} /> */}
+          {/* <CostComparisonSection data={data.costComparisons} /> */}
+          {/* <WhyUsSection items={data.whyUs} /> */}
+          {/* <TestimonialSection items={data.testimonials} /> */}
+          {/* <BenefitsSection items={data.benefits} /> */}
+          {/* <ProcessSection items={data.process} /> */}
+          {/* <BrandGrid logos={data.brandLogos} /> */}
         </>
       )}
     </>
