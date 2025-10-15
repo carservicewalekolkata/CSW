@@ -1,52 +1,51 @@
+/**
+ * Centralized API Endpoint Configuration
+ * For Next.js admin + backend hosted on https://control.carservicewale.com
+ */
+
 const DEFAULT_BACKEND_URL = 'https://control.carservicewale.com/api';
 
-const envBackendUrl =
-  (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_BACKEND_URL as string | undefined) : undefined) ??
-  (typeof process !== 'undefined' ? process.env?.VITE_BACKEND_URL ?? process.env?.BACKEND_URL : undefined);
+// Use environment variable from Azure, fallback to default
+const backendUrl = (process.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL).replace(/\/$/, '');
 
-const normalizedBackendUrl = (envBackendUrl ?? DEFAULT_BACKEND_URL).replace(/\/$/, '');
-
-let backendOrigin = normalizedBackendUrl;
+// Derive origin for asset URLs (optional, but useful)
+let backendOrigin: string;
 try {
-  backendOrigin = new URL(normalizedBackendUrl).origin;
+  backendOrigin = new URL(backendUrl).origin;
 } catch {
-  backendOrigin = normalizedBackendUrl;
+  backendOrigin = backendUrl;
 }
 
-const apiVersion = '/v1';
-const apiPrefix = `${apiVersion}`;
-const servicesBasePath = `${apiPrefix}/services`;
-const carsBasePath = `${apiPrefix}/cars`;
-const authBasePath = `${apiVersion}/auth`;
-const adminBasePath = `${apiVersion}/admin`;
+// ----- API Version and Routes -----
+const API_VERSION = 'v1';
 
 export const APIEndpoints = {
-  BackendURL: normalizedBackendUrl,
+  BackendURL: backendUrl,
   BackendOrigin: backendOrigin,
 
   auth: {
-    login: `${authBasePath}/login`,
-    logout: `${authBasePath}/logout`,
-    refresh: `${authBasePath}/refresh`,
-    status: `${authBasePath}/status`,
-    forgotPassword: `${authBasePath}/forgot-password`
+    login: `${API_VERSION}/auth/login`,
+    logout: `${API_VERSION}/auth/logout`,
+    refresh: `${API_VERSION}/auth/refresh`,
+    status: `${API_VERSION}/auth/status`,
+    forgotPassword: `${API_VERSION}/auth/forgot-password`,
   },
 
   admin: {
-    superUser: `${adminBasePath}/super-user`
+    superUser: `${API_VERSION}/admin/super-user`,
   },
 
   services: {
-    details: `${servicesBasePath}/details`,
-    categories: `${servicesBasePath}/service-category`
+    details: `${API_VERSION}/services/details`,
+    categories: `${API_VERSION}/services/service-category`,
   },
 
   cars: {
-    brands: `${carsBasePath}/brands`,
-    models: `${carsBasePath}/models`,
-    brandIcon: (iconId: string) => `/api${carsBasePath}/brands/icon/${iconId}`,
-    modelIcon: (iconId: string) => `/api${carsBasePath}/models/icon/${iconId}`
-  }
+    brands: `${API_VERSION}/cars/brands`,
+    models: `${API_VERSION}/cars/models`,
+    brandIcon: (iconId: string) => `${API_VERSION}/cars/brands/icon/${iconId}`,
+    modelIcon: (iconId: string) => `${API_VERSION}/cars/models/icon/${iconId}`,
+  },
 } as const;
 
 export type ApiEndpointConfig = typeof APIEndpoints;

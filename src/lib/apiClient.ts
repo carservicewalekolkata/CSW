@@ -71,7 +71,8 @@ export async function apiRequest<T>({ endpoint, method = 'GET', data, headers = 
       },
       body: data ? JSON.stringify(data) : undefined,
       signal: controller.signal,
-      credentials: 'include'
+      credentials: 'include',
+      mode: 'cors'
     });
 
     if (!response.ok) {
