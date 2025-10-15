@@ -14,7 +14,7 @@ jobs:
   quality-check:
     runs-on: ubuntu-latest
     env:
-      VITE_BACKEND_URL: ${{ secrets.DEVELOPMENT_BACKEND_URL }}
+      VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
 
     steps:
       - name: Checkout repository
@@ -29,7 +29,7 @@ jobs:
       - name: Validate backend URL secret
         run: |
           if [ -z "$VITE_BACKEND_URL" ]; then
-            echo "Missing secret DEVELOPMENT_BACKEND_URL (sets VITE_BACKEND_URL)."
+            echo "Missing secret VITE_BACKEND_URL (sets VITE_BACKEND_URL)."
             exit 1
           fi
 
@@ -52,7 +52,7 @@ jobs:
     needs: quality-check
     runs-on: ubuntu-latest
     env:
-      VITE_BACKEND_URL: ${{ secrets.DEVELOPMENT_BACKEND_URL }}
+      VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
     environment:
       name: development
       url: https://${{ env.APP_NAME }}.azurewebsites.net
@@ -70,7 +70,7 @@ jobs:
             [
               {
                 "name": "VITE_BACKEND_URL",
-                "value": "${{ secrets.DEVELOPMENT_BACKEND_URL }}"
+                "value": "${{ secrets.VITE_BACKEND_URL }}"
               }
             ]
 
