@@ -10,7 +10,6 @@ env:
   NODE_VERSION: 22
   APP_NAME: csw-live
   RESOURCE_GROUP: cswapp-rg
-  SLOT_NAME: staging
 
 jobs:
   quality-check:
@@ -72,7 +71,6 @@ jobs:
         uses: azure/appservice-settings@v1
         with:
           app-name: ${{ env.APP_NAME }}
-          slot-name: ${{ env.SLOT_NAME }}
           app-settings-json: |
             [
               {
@@ -87,14 +85,13 @@ jobs:
           name: dist
           path: dist
 
-      - name: Deploy to Azure Web App (staging slot)
+      - name: Deploy to Azure Web App (Production)
         run: |
           az webapp deploy \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --name ${{ env.APP_NAME }} \
-            --slot ${{ env.SLOT_NAME }} \
             --src-path ./dist
 
-      - name: Output staging URL
+      - name: Output Live URL
         run: |
-          echo "✅ Deployed to staging slot: https://${{ env.APP_NAME }}-staging.azurewebsites.net"
+          echo "Deployed successfully to https://${{ env.APP_NAME }}.azurewebsites.net"
