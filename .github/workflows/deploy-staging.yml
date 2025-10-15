@@ -1,14 +1,14 @@
-name: Deploy Development to Azure Web App
+name: Deploy Staging (Production Ready)
 
 on:
   push:
     branches:
-      - development
+      - staging
   workflow_dispatch:
 
 env:
   NODE_VERSION: 20
-  APP_NAME: csw-dev
+  APP_NAME: csw-live
   RESOURCE_GROUP: cswapp-rg
 
 jobs:
@@ -55,7 +55,7 @@ jobs:
     env:
       VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
     environment:
-      name: development
+      name: production
       url: https://${{ env.APP_NAME }}.azurewebsites.net
 
     steps:
@@ -93,7 +93,7 @@ jobs:
           name: dist
           path: dist
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure Web App (Production)
         run: |
           cd dist
           zip -r ../app.zip .
@@ -103,3 +103,7 @@ jobs:
             --name ${{ env.APP_NAME }} \
             --src-path ./app.zip \
             --type zip
+
+      - name: Output Live URL
+        run: |
+          echo "Deployed successfully to https://${{ env.APP_NAME }}.azurewebsites.net"
