@@ -10,7 +10,7 @@ env:
   NODE_VERSION: 22
   APP_NAME: csw-live
   RESOURCE_GROUP: cswapp-rg
-  SLOT_NAME: staging 
+  SLOT_NAME: staging
 
 jobs:
   quality-check:
@@ -31,7 +31,7 @@ jobs:
       - name: Validate backend URL secret
         run: |
           if [ -z "$VITE_BACKEND_URL" ]; then
-            echo "Missing secret VITE_BACKEND_URL (sets VITE_BACKEND_URL)."
+            echo "Missing secret VITE_BACKEND_URL."
             exit 1
           fi
 
@@ -63,10 +63,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Azure Login
+      - name: Azure Login (OIDC / Service Principal)
         uses: azure/login@v2
         with:
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_LIVE }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Ensure backend URL app setting
         uses: azure/appservice-settings@v1
@@ -88,12 +88,12 @@ jobs:
           path: dist
 
       - name: Deploy to Azure Web App (staging slot)
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.APP_NAME }}
-          slot-name: ${{ env.SLOT_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_LIVE }}
-          package: ./dist
+        run: |
+          az webapp deploy \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.APP_NAME }} \
+            --slot ${{ env.SLOT_NAME }} \
+            --src-path ./dist
 
       - name: Output staging URL
         run: |
