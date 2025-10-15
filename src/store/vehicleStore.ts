@@ -2,7 +2,8 @@ import { create } from 'zustand';
 
 import { APIEndpoints } from '@/APIEndpoints';
 import { apiRequest, resolveBackendAssetUrl } from '@/lib/apiClient';
-import type { Brand, BrandResponse, Model, ModelResponse } from '@/types/api';
+import type { Brand, BrandResponse, Model, ModelResponse, ModelService } from '@/types/api';
+import { slugifySegment } from '@/utils/slug';
 
 export interface VehicleBrand {
   name: string;
@@ -18,6 +19,7 @@ export interface VehicleModel {
   brandSlug: string;
   fuelTypes: string[];
   thumbnailUrl: string | null;
+  services: ModelService[];
 }
 
 type ModelsByBrand = Record<string, VehicleModel[]>;
@@ -56,12 +58,20 @@ const buildEndpoint = (path: string, params?: Record<string, string | number | u
   return queryString ? `${path}?${queryString}` : path;
 };
 
+const normalizeSlugValue = (value: string | null | undefined, fallback: string) => {
+  const trimmed = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (!trimmed || trimmed === 'null' || trimmed === 'undefined') {
+    return slugifySegment(fallback);
+  }
+  return slugifySegment(trimmed);
+};
+
 const normalizeBrands = (brands: BrandResponse['data']): VehicleBrand[] =>
   (brands ?? [])
     .filter((brand: Brand) => brand.status)
     .map((brand) => ({
       name: brand.name.trim(),
-      slug: brand.slug,
+      slug: normalizeSlugValue(brand.slug, brand.name),
       iconUrl: resolveBackendAssetUrl(brand.icon)
     }))
     .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
@@ -99,6 +109,34 @@ const normalizeFuelTypes = (fuelTypes: Model['fuel_type']): string[] => {
   return Array.from(unique);
 };
 
+const normalizeModelServices = (services: Model['services']): ModelService[] => {
+  if (!Array.isArray(services)) {
+    return [];
+  }
+
+  return services
+    .map((service) => {
+      const serviceId =
+        typeof service.services_id === 'string'
+          ? service.services_id
+          : service.services_id && typeof (service.services_id as { toString?: () => string }).toString === 'function'
+          ? (service.services_id as { toString: () => string }).toString()
+          : '';
+
+      if (!serviceId) {
+        return null;
+      }
+
+      return {
+        services_id: serviceId,
+        discount: Number.isFinite(service.discount) ? Number(service.discount) : 0,
+        original_price: Number.isFinite(service.original_price) ? Number(service.original_price) : 0,
+        discount_price: Number.isFinite(service.discount_price) ? Number(service.discount_price) : 0
+      } satisfies ModelService;
+    })
+    .filter((service): service is ModelService => service !== null);
+};
+
 const normalizeModels = (models: ModelResponse['data'], brandLookup: Map<string, VehicleBrand>): VehicleModel[] =>
   (models ?? [])
     .filter((model: Model) => model.status)
@@ -110,14 +148,17 @@ const normalizeModels = (models: ModelResponse['data'], brandLookup: Map<string,
         return null;
       }
 
+      const modelSlug = normalizeSlugValue(model.slug, model.name);
+
       return {
         id: model.id,
         name: model.name.trim(),
-        slug: model.slug,
+        slug: modelSlug,
         brandName: model.brand_name ?? brand.name,
         brandSlug: brand.slug,
         fuelTypes: normalizeFuelTypes(model.fuel_type),
-        thumbnailUrl: resolveBackendAssetUrl(model.thumbnail ?? model.image)
+        thumbnailUrl: resolveBackendAssetUrl(model.thumbnail ?? model.image),
+        services: normalizeModelServices(model.services)
       };
     })
     .filter((model): model is VehicleModel => Boolean(model))

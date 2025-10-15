@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 20
+  NODE_VERSION: 22
   APP_NAME: csw-dev
   RESOURCE_GROUP: cswapp-rg
 
@@ -84,7 +84,7 @@ jobs:
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --name ${{ env.APP_NAME }} \
             --startup-file "pm2 serve /home/site/wwwroot --no-daemon --spa" \
-            --linux-fx-version "NODE|20-lts" \
+            --linux-fx-version "NODE|22-lts" \
             >/dev/null
 
       - name: Download build artifacts

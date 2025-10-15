@@ -3,10 +3,15 @@
  * For Next.js admin + backend hosted on https://control.carservicewale.com
  */
 
-const DEFAULT_BACKEND_URL = 'https://control.carservicewale.com/api';
+const DEFAULT_PRODUCTION_BACKEND_URL = 'https://control.carservicewale.com/api';
+const DEFAULT_DEVELOPMENT_BACKEND_URL = 'http://localhost:3000/api';
 
-// Use environment variable from Azure, fallback to default
-const backendUrl = (process.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL).replace(/\/$/, '');
+const isProduction = import.meta.env.PROD;
+const resolvedDefaultBackendUrl = isProduction ? DEFAULT_PRODUCTION_BACKEND_URL : DEFAULT_DEVELOPMENT_BACKEND_URL;
+
+// Prefer explicit configuration, otherwise fall back to mode-specific defaults.
+const configuredBackendUrl = import.meta.env.VITE_BACKEND_URL?.trim();
+const backendUrl = (configuredBackendUrl && configuredBackendUrl.length > 0 ? configuredBackendUrl : resolvedDefaultBackendUrl).replace(/\/$/, '');
 
 // Derive origin for asset URLs (optional, but useful)
 let backendOrigin: string;

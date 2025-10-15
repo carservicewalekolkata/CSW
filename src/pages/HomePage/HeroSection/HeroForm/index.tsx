@@ -1,10 +1,14 @@
 import gsap from 'gsap';
-import { FormEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import type { ClipboardEvent, KeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 
 import AccentFormField from '@/components/AccentFormField';
 import { HomeContent } from '@/hooks/useHomeContent';
 import { useAppStore } from '@/store/appStore';
 import { useVehicleStore, type VehicleBrand, type VehicleModel } from '@/store/vehicleStore';
+import { buildVehiclePath } from '@/utils/vehicleSlug';
 
 const STEP_SEQUENCE = ['brand', 'model', 'fuel'] as const;
 type StepKey = (typeof STEP_SEQUENCE)[number];
@@ -19,6 +23,10 @@ const FUEL_ICON_MAP: Record<string, string> = {
   hybrid: '/images/icons/general/plan.svg'
 };
 
+const PHONE_NUMBER_PATTERN = /^\d{10}$/;
+const MOCK_OTP_CODE = '1234';
+const OTP_LENGTH = 4;
+
 const LoadingIndicator = () => (
   <div className="flex items-center justify-center py-10">
     <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#0285CE] border-t-transparent" aria-hidden />
@@ -26,15 +34,37 @@ const LoadingIndicator = () => (
   </div>
 );
 
+type VehicleNavigationState = {
+  selectedBrandSlug: string;
+  selectedBrandName: string;
+  selectedModelSlug: string;
+  selectedModelName: string;
+  selectedFuelType: string;
+  phone: string;
+};
+
+type PendingNavigationState = {
+  path: string;
+  state: VehicleNavigationState;
+};
+
 interface VehicleSelectionInputProps {
   label: string;
   placeholder: string;
   value: string;
   onOpen: () => void;
   isComplete: boolean;
+  onClear?: () => void;
 }
 
-const VehicleSelectionInput = ({ label, placeholder, value, onOpen, isComplete }: VehicleSelectionInputProps) => (
+const VehicleSelectionInput = ({
+  label,
+  placeholder,
+  value,
+  onOpen,
+  isComplete,
+  onClear
+}: VehicleSelectionInputProps) => (
   <label className="relative block">
     <span className="absolute -top-3 left-4 bg-white px-1 text-[13px] font-semibold text-[#2a1454]">{label}</span>
     <input
@@ -54,19 +84,43 @@ const VehicleSelectionInput = ({ label, placeholder, value, onOpen, isComplete }
         }
       }}
       className={`w-full rounded-md border bg-white p-4 text-sm text-[#2a1454] placeholder:text-[#9aa6c2] transition focus:border-[#0285CE] focus:outline-none focus:ring-4 focus:ring-[#D6F0FF] ${
-        isComplete ? 'border-[#0285CE] font-semibold' : 'border-[#00AEEF]'
-      }`}
+        value && onClear ? 'pr-12' : 'pr-4'
+      } ${isComplete ? 'border-[#0285CE] font-semibold' : 'border-[#00AEEF]'}`}
     />
+    {value && onClear && (
+      <button
+        type="button"
+        onMouseDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onClear();
+        }}
+        className="absolute inset-y-0 right-4 flex items-center text-lg text-[#9aa6c2] transition hover:text-[#0285CE]"
+        aria-label="Clear vehicle selection"
+      >
+        &times;
+      </button>
+    )}
   </label>
 );
 
 const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
   const { currentCity } = useAppStore();
   const cardRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
+  const [otpDigits, setOtpDigits] = useState<string[]>(() => Array(OTP_LENGTH).fill(''));
+  const [otpError, setOtpError] = useState('');
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<PendingNavigationState | null>(null);
   const [activeStep, setActiveStep] = useState<SelectorStep>(null);
+  const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const {
     brands,
@@ -123,7 +177,43 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
   const availableFuelTypes = useMemo<string[]>(() => selectedModel?.fuelTypes ?? [], [selectedModel]);
 
   const shouldShowPhoneField = Boolean(selectedBrand && selectedModel && selectedFuelType);
-  const isSubmitDisabled = !shouldShowPhoneField || !phone.trim();
+  const isSubmitDisabled = !shouldShowPhoneField;
+  const trimmedPhone = phone.trim();
+  const isPhoneEntered = trimmedPhone.length > 0;
+  const isPhoneValid = PHONE_NUMBER_PATTERN.test(trimmedPhone);
+  const submitButtonLabel = isPhoneValid ? 'Get OTP' : 'Get A Quote';
+
+  const focusOtpInput = (index: number) => {
+    const input = otpInputRefs.current[index];
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  };
+
+  const resetOtpFlow = () => {
+    setOtpDigits(Array(OTP_LENGTH).fill(''));
+    setOtpError('');
+    setPendingNavigation(null);
+    setIsOtpModalOpen(false);
+  };
+
+  const navigateToTarget = (path: string, state: VehicleNavigationState) => {
+    setActiveStep(null);
+    setMessage('');
+    resetOtpFlow();
+    navigate(path, { state });
+    setPhone('');
+    resetSelection();
+  };
+
+  useEffect(() => {
+    if (!isOtpModalOpen) {
+      return;
+    }
+    const timer = setTimeout(() => focusOtpInput(0), 0);
+    return () => clearTimeout(timer);
+  }, [isOtpModalOpen]);
 
   const openSelector = () => {
     const nextStep: StepKey = !selectedBrand ? 'brand' : !selectedModel ? 'model' : 'fuel';
@@ -178,6 +268,14 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
     setActiveStep(null);
   };
 
+  const handleClearSelection = () => {
+    resetSelection();
+    setPhone('');
+    setMessage('');
+    resetOtpFlow();
+    setActiveStep(null);
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -199,17 +297,138 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
       return;
     }
 
-    if (!phone.trim()) {
-      setMessage('Please share your contact number so our advisor can call you back.');
+    setMessage('');
+    setOtpError('');
+
+    if (isPhoneEntered && !isPhoneValid) {
+      setMessage('Please enter a valid 10-digit mobile number.');
       return;
     }
 
-    setMessage('Thanks! Our service advisor will call you within 15 minutes.');
-    setPhone('');
-    resetSelection();
-    setActiveStep(null);
+    const targetPath = buildVehiclePath(selectedFuelType, selectedBrand.slug, selectedModel.slug);
+
+    const navigationState: VehicleNavigationState = {
+      selectedBrandSlug: selectedBrand.slug,
+      selectedBrandName: selectedBrand.name,
+      selectedModelSlug: selectedModel.slug,
+      selectedModelName: selectedModel.name,
+      selectedFuelType,
+      phone: trimmedPhone
+    };
+
+    if (isPhoneValid) {
+      resetOtpFlow();
+      setPendingNavigation({ path: targetPath, state: navigationState });
+      setIsOtpModalOpen(true);
+      return;
+    }
+
+    navigateToTarget(targetPath, navigationState);
   };
 
+  const handleOtpClose = () => {
+    resetOtpFlow();
+  };
+
+  const handleOtpDigitChange = (value: string, index: number) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+
+    setOtpDigits((previous) => {
+      const next = [...previous];
+      next[index] = digit;
+      return next;
+    });
+
+    if (otpError) {
+      setOtpError('');
+    }
+
+    if (digit && index < OTP_LENGTH - 1) {
+      focusOtpInput(index + 1);
+    }
+  };
+
+  const handleOtpKeyDown = (event: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleOtpVerify();
+      return;
+    }
+
+    if (event.key === 'Backspace') {
+      if (otpDigits[index]) {
+        return;
+      }
+
+      if (index > 0) {
+        event.preventDefault();
+        setOtpDigits((previous) => {
+          const next = [...previous];
+          next[index - 1] = '';
+          return next;
+        });
+        focusOtpInput(index - 1);
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowLeft' && index > 0) {
+      event.preventDefault();
+      focusOtpInput(index - 1);
+      return;
+    }
+
+    if (event.key === 'ArrowRight' && index < OTP_LENGTH - 1) {
+      event.preventDefault();
+      focusOtpInput(index + 1);
+    }
+  };
+
+  const handleOtpPaste = (event: ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const pasted = event.clipboardData?.getData('text') ?? '';
+    if (!pasted) {
+      return;
+    }
+
+    const digits = pasted.replace(/\D/g, '').slice(0, OTP_LENGTH).split('');
+    if (digits.length === 0) {
+      return;
+    }
+
+    const nextDigits = Array.from({ length: OTP_LENGTH }, (_, idx) => digits[idx] ?? '');
+    setOtpDigits(nextDigits);
+    setOtpError('');
+
+    const nextIndex = Math.min(digits.length, OTP_LENGTH) - 1;
+    if (nextIndex >= 0) {
+      focusOtpInput(nextIndex);
+    }
+  };
+
+  const handleOtpVerify = () => {
+    const enteredOtp = otpDigits.join('');
+
+    if (enteredOtp.length !== OTP_LENGTH) {
+      setOtpError(`Please enter the ${OTP_LENGTH}-digit OTP.`);
+      const firstEmptyIndex = otpDigits.findIndex((digit) => !digit);
+      focusOtpInput(firstEmptyIndex >= 0 ? firstEmptyIndex : OTP_LENGTH - 1);
+      return;
+    }
+
+    if (enteredOtp !== MOCK_OTP_CODE) {
+      setOtpError('Incorrect OTP. Please try again.');
+      setOtpDigits(Array(OTP_LENGTH).fill(''));
+      focusOtpInput(0);
+      return;
+    }
+
+    if (!pendingNavigation) {
+      return;
+    }
+
+    navigateToTarget(pendingNavigation.path, pendingNavigation.state);
+  };
   const renderBrandContent = () => {
     if (isLoadingCatalog && !hasLoadedCatalog) {
       return <LoadingIndicator />;
@@ -392,118 +611,193 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
       ? 'What fuel does your car use?'
       : '';
 
-  return (
-    <div className="flex items-start justify-center lg:justify-end">
-      <div
-        ref={cardRef}
-        className="relative w-full max-w-[420px] rounded-md bg-white p-8 pb-16 text-[#2a1454] shadow-[0_50px_120px_rgba(26,107,199,0.18)] ring-1 ring-white/80"
-      >
-        <h2 className="text-3xl font-light leading-snug text-[#2a1454]">
-          {beforeCity}
-          {data.subheadline.includes(currentCity.name) && (
-            <span className="font-extrabold text-[#00AEEF]">{currentCity.name}</span>
-          )}
-          {afterCity}
-        </h2>
-        <p className="mt-2 text-sm text-[#6c74a0]">Get instant quotes for your car service</p>
-
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-          <VehicleSelectionInput
-            label="Your Vehicle"
-            placeholder="Select brand, model & fuel type"
-            value={selectionSummary}
-            onOpen={openSelector}
-            isComplete={shouldShowPhoneField}
-          />
-
-          {shouldShowPhoneField && (
-            <AccentFormField
-              label="Enter Mobile Number"
-              type="tel"
-              value={phone}
-              onChange={(event) => {
-                setPhone(event.target.value);
-                if (message) {
-                  setMessage('');
-                }
-              }}
-              placeholder="Enter mobile number"
-            />
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitDisabled}
-            className={`mt-2 flex w-full items-center justify-center rounded-md px-6 py-4 text-sm font-semibold uppercase tracking-wide text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0285CE] ${
-              isSubmitDisabled
-                ? 'cursor-not-allowed bg-[#00AEEF]/50'
-                : 'bg-[#00AEEF] shadow-[0_15px_30px_rgba(2,150,228,0.35)] hover:bg-[#0285CE]'
-            }`}
+  const otpModal =
+    isOtpModalOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className="fixed inset-0 z-[999] flex items-center justify-center bg-[#031135]/80 px-4"
+            role="dialog"
+            aria-modal="true"
           >
-            Get A Quote
-          </button>
-          {message && <p className="text-xs font-medium text-[#0285CE]">{message}</p>}
-        </form>
-
-        <div
-          className={`absolute inset-0 z-20 overflow-hidden rounded-md bg-white transition-all duration-300 ease-out ${
-            isSheetOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
-          } ${isSheetOpen ? 'translate-y-0' : 'translate-y-4'}`}
-          aria-hidden={!isSheetOpen}
-        >
-          <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between border-b border-[#dbe7f5] px-5 py-4">
+            <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
               <button
                 type="button"
-                onClick={handleBack}
-                className="flex items-center gap-1 text-sm font-semibold text-[#0285CE] transition hover:text-[#026aa2]"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                Back
-              </button>
-              <div className="flex-1 text-center">
-                <p className="text-sm font-semibold text-[#2a1454]">{currentTitle}</p>
-                <p className="text-xs text-[#6c74a0]">{currentSubtitle}</p>
-              </div>
-              <button
-                type="button"
-                onClick={handleCloseSheet}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[#6c74a0] transition hover:bg-[#eef6ff] hover:text-[#0285CE]"
-                aria-label="Close selection"
+                onClick={handleOtpClose}
+                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-[#6c74a0] transition hover:bg-[#eef6ff] hover:text-[#0285CE]"
+                aria-label="Close OTP popup"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-            </div>
-
-            <div className="relative flex-1 overflow-hidden">
-              <div
-                className="flex h-full transition-transform duration-300 ease-out"
-                style={{
-                  width: `${totalWidthPercent}%`,
-                  transform: `translateX(-${activeIndex * stepWidthPercent}%)`
-                }}
-              >
-                {STEP_SEQUENCE.map((step) => (
-                  <section
-                    key={step}
-                    className="h-full shrink-0 overflow-y-auto px-5 py-5"
-                    style={{ width: `${stepWidthPercent}%` }}
-                  >
-                    {step === 'brand' && renderBrandContent()}
-                    {step === 'model' && renderModelContent()}
-                    {step === 'fuel' && renderFuelContent()}
-                  </section>
+              <h3 className="text-lg font-semibold text-[#2a1454]">Verify OTP</h3>
+              <p className="mt-2 text-sm text-[#6c74a0]">
+                Enter the 4-digit code sent to {trimmedPhone || 'your phone number'}. Use {MOCK_OTP_CODE} to continue
+                for now.
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                {otpDigits.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(element) => {
+                      otpInputRefs.current[index] = element;
+                    }}
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(event) => handleOtpDigitChange(event.currentTarget.value, index)}
+                    onKeyDown={(event) => handleOtpKeyDown(event, index)}
+                    onPaste={handleOtpPaste}
+                    className="h-12 w-12 rounded-lg border border-[#dbe7f5] text-center text-lg font-semibold tracking-[0.2em] text-[#2a1454] focus:border-[#0285CE] focus:outline-none focus:ring-2 focus:ring-[#D6F0FF]"
+                    aria-label={`OTP digit ${index + 1}`}
+                  />
                 ))}
+              </div>
+              {otpError && <p className="mt-4 text-xs font-medium text-center text-red-500">{otpError}</p>}
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleOtpClose}
+                  className="flex-1 rounded-md border border-[#dbe7f5] px-4 py-3 text-sm font-semibold text-[#2a1454] transition hover:border-[#0285CE] hover:text-[#0285CE]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOtpVerify}
+                  className="flex-1 rounded-md bg-[#00AEEF] px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_10px_25px_rgba(2,150,228,0.25)] transition hover:bg-[#0285CE]"
+                >
+                  Verify &amp; Continue
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <>
+      <div className="flex items-start justify-center lg:justify-end">
+        <div
+          ref={cardRef}
+          className="relative w-full max-w-[420px] rounded-md bg-white p-8 pb-16 text-[#2a1454] shadow-[0_50px_120px_rgba(26,107,199,0.18)] ring-1 ring-white/80"
+        >
+          <h2 className="text-3xl font-light leading-snug text-[#2a1454]">
+            {beforeCity}
+            {data.subheadline.includes(currentCity.name) && (
+              <span className="font-extrabold text-[#00AEEF]">{currentCity.name}</span>
+            )}
+            {afterCity}
+          </h2>
+          <p className="mt-2 text-sm text-[#6c74a0]">Get instant quotes for your car service</p>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            <VehicleSelectionInput
+              label="Your Vehicle"
+              placeholder="Select brand, model & fuel type"
+              value={selectionSummary}
+              onOpen={openSelector}
+              isComplete={shouldShowPhoneField}
+              onClear={selectionSummary ? handleClearSelection : undefined}
+            />
+
+            {shouldShowPhoneField && (
+              <AccentFormField
+                label="Enter Mobile Number (Optional)"
+                type="tel"
+                value={phone}
+                onChange={(event) => {
+                  const digits = event.target.value.replace(/\D/g, '').slice(0, 10);
+                  setPhone(digits);
+                  if (message) {
+                    setMessage('');
+                  }
+                  if (otpError || isOtpModalOpen || pendingNavigation || otpDigits.some(Boolean)) {
+                    resetOtpFlow();
+                  }
+                }}
+                placeholder="Enter mobile number"
+              />
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitDisabled}
+              className={`mt-2 flex w-full items-center justify-center rounded-md px-6 py-4 text-sm font-semibold uppercase tracking-wide text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0285CE] ${
+                isSubmitDisabled
+                  ? 'cursor-not-allowed bg-[#00AEEF]/50'
+                  : 'bg-[#00AEEF] shadow-[0_15px_30px_rgba(2,150,228,0.35)] hover:bg-[#0285CE]'
+              }`}
+            >
+              {submitButtonLabel}
+            </button>
+            {message && <p className="text-xs font-medium text-[#0285CE]">{message}</p>}
+          </form>
+
+          <div
+            className={`absolute inset-0 z-20 overflow-hidden rounded-md bg-white transition-all duration-300 ease-out ${
+              isSheetOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+            } ${isSheetOpen ? 'translate-y-0' : 'translate-y-4'}`}
+            aria-hidden={!isSheetOpen}
+          >
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between border-b border-[#dbe7f5] px-5 py-4">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="flex items-center gap-1 text-sm font-semibold text-[#0285CE] transition hover:text-[#026aa2]"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Back
+                </button>
+                <div className="flex-1 text-center">
+                  <p className="text-sm font-semibold text-[#2a1454]">{currentTitle}</p>
+                  <p className="text-xs text-[#6c74a0]">{currentSubtitle}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCloseSheet}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-[#6c74a0] transition hover:bg-[#eef6ff] hover:text-[#0285CE]"
+                  aria-label="Close selection"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="relative flex-1 overflow-hidden">
+                <div
+                  className="flex h-full transition-transform duration-300 ease-out"
+                  style={{
+                    width: `${totalWidthPercent}%`,
+                    transform: `translateX(-${activeIndex * stepWidthPercent}%)`
+                  }}
+                >
+                  {STEP_SEQUENCE.map((step) => (
+                    <section
+                      key={step}
+                      className="h-full shrink-0 overflow-y-auto px-5 py-5"
+                      style={{ width: `${stepWidthPercent}%` }}
+                    >
+                      {step === 'brand' && renderBrandContent()}
+                      {step === 'model' && renderModelContent()}
+                      {step === 'fuel' && renderFuelContent()}
+                    </section>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      {otpModal}
+    </>
   );
 };
 
