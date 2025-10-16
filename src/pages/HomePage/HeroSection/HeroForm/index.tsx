@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 import AccentFormField from '@/components/AccentFormField';
 import { HomeContent } from '@/hooks/useHomeContent';
+import { logCustomerActivity } from '@/lib/customerActivityClient';
 import { useAppStore } from '@/store/appStore';
 import { useVehicleStore, type VehicleBrand, type VehicleModel } from '@/store/vehicleStore';
 import { buildVehiclePath } from '@/utils/vehicleSlug';
@@ -26,6 +27,8 @@ const FUEL_ICON_MAP: Record<string, string> = {
 const PHONE_NUMBER_PATTERN = /^\d{10}$/;
 const MOCK_OTP_CODE = '1234';
 const OTP_LENGTH = 4;
+const SESSION_TOKEN_STORAGE_KEY = 'csw_customer_session_token';
+const SESSION_PHONE_STORAGE_KEY = 'csw_customer_session_phone';
 
 const LoadingIndicator = () => (
   <div className="flex items-center justify-center py-10">
@@ -115,12 +118,57 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
 
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionPhone, setSessionPhone] = useState<string | null>(null);
   const [otpDigits, setOtpDigits] = useState<string[]>(() => Array(OTP_LENGTH).fill(''));
   const [otpError, setOtpError] = useState('');
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isOtpVerifying, setIsOtpVerifying] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<PendingNavigationState | null>(null);
   const [activeStep, setActiveStep] = useState<SelectorStep>(null);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  useEffect(() => {
+    try {
+      const storedToken = localStorage.getItem(SESSION_TOKEN_STORAGE_KEY);
+      const storedPhone = localStorage.getItem(SESSION_PHONE_STORAGE_KEY);
+
+      if (storedToken) {
+        setSessionToken(storedToken);
+      }
+
+      if (storedPhone) {
+        setSessionPhone(storedPhone);
+      }
+    } catch (error) {
+      console.error('Failed to read stored customer session.', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (sessionToken) {
+        localStorage.setItem(SESSION_TOKEN_STORAGE_KEY, sessionToken);
+      } else {
+        localStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
+      }
+    } catch (error) {
+      console.error('Failed to persist customer session token.', error);
+    }
+  }, [sessionToken]);
+
+  useEffect(() => {
+    try {
+      if (sessionPhone) {
+        localStorage.setItem(SESSION_PHONE_STORAGE_KEY, sessionPhone);
+      } else {
+        localStorage.removeItem(SESSION_PHONE_STORAGE_KEY);
+      }
+    } catch (error) {
+      console.error('Failed to persist customer session phone.', error);
+    }
+  }, [sessionPhone]);
 
   const {
     brands,
@@ -176,12 +224,20 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
 
   const availableFuelTypes = useMemo<string[]>(() => selectedModel?.fuelTypes ?? [], [selectedModel]);
 
-  const shouldShowPhoneField = Boolean(selectedBrand && selectedModel && selectedFuelType);
-  const isSubmitDisabled = !shouldShowPhoneField;
+  const hasCompletedSelection = Boolean(selectedBrand && selectedModel && selectedFuelType);
+  const hasActiveSession = Boolean(sessionToken);
+  const shouldShowPhoneField = hasCompletedSelection && !hasActiveSession;
   const trimmedPhone = phone.trim();
   const isPhoneEntered = trimmedPhone.length > 0;
   const isPhoneValid = PHONE_NUMBER_PATTERN.test(trimmedPhone);
-  const submitButtonLabel = isPhoneValid ? 'Get OTP' : 'Get A Quote';
+  const isSubmitDisabled = !hasCompletedSelection || isProcessing;
+  const submitButtonLabel = isProcessing
+    ? 'Saving...'
+    : hasActiveSession
+    ? 'Get A Quote'
+    : isPhoneValid
+    ? 'Get OTP'
+    : 'Get A Quote';
 
   const focusOtpInput = (index: number) => {
     const input = otpInputRefs.current[index];
@@ -196,12 +252,12 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
     setOtpError('');
     setPendingNavigation(null);
     setIsOtpModalOpen(false);
+    setIsOtpVerifying(false);
   };
 
   const navigateToTarget = (path: string, state: VehicleNavigationState) => {
     setActiveStep(null);
     setMessage('');
-    resetOtpFlow();
     navigate(path, { state });
     setPhone('');
     resetSelection();
@@ -276,7 +332,21 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
     setActiveStep(null);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const buildVehiclePayload = () => {
+    if (!selectedBrand || !selectedModel || !selectedFuelType) {
+      throw new Error('Vehicle selection is incomplete.');
+    }
+
+    return {
+      brandSlug: selectedBrand.slug,
+      brandName: selectedBrand.name,
+      modelSlug: selectedModel.slug,
+      modelName: selectedModel.name,
+      fuelType: selectedFuelType
+    };
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!selectedBrand) {
@@ -300,30 +370,57 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
     setMessage('');
     setOtpError('');
 
-    if (isPhoneEntered && !isPhoneValid) {
-      setMessage('Please enter a valid 10-digit mobile number.');
-      return;
+    try {
+      const vehiclePayload = buildVehiclePayload();
+      const targetPath = buildVehiclePath(selectedFuelType, selectedBrand.slug, selectedModel.slug);
+      const navigationState: VehicleNavigationState = {
+        selectedBrandSlug: selectedBrand.slug,
+        selectedBrandName: selectedBrand.name,
+        selectedModelSlug: selectedModel.slug,
+        selectedModelName: selectedModel.name,
+        selectedFuelType,
+        phone: hasActiveSession ? sessionPhone ?? '' : trimmedPhone
+      };
+
+      if (hasActiveSession && sessionToken) {
+        setIsProcessing(true);
+        const response = await logCustomerActivity({
+          sessionToken,
+          vehicle: vehiclePayload
+        });
+
+        setSessionToken(response.sessionToken);
+        setSessionPhone(response.session.phone);
+
+        navigateToTarget(targetPath, {
+          ...navigationState,
+          phone: response.session.phone
+        });
+        return;
+      }
+
+      if (isPhoneEntered && !isPhoneValid) {
+        setMessage('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+
+      if (isPhoneValid) {
+        setOtpDigits(Array(OTP_LENGTH).fill(''));
+        setOtpError('');
+        setPendingNavigation({ path: targetPath, state: navigationState });
+        setIsOtpModalOpen(true);
+        return;
+      }
+
+      navigateToTarget(targetPath, navigationState);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'We could not log this search right now. Please try again.';
+      setMessage(errorMessage);
+      console.error('Failed to handle hero form submission', error);
+    } finally {
+      setIsProcessing(false);
     }
-
-    const targetPath = buildVehiclePath(selectedFuelType, selectedBrand.slug, selectedModel.slug);
-
-    const navigationState: VehicleNavigationState = {
-      selectedBrandSlug: selectedBrand.slug,
-      selectedBrandName: selectedBrand.name,
-      selectedModelSlug: selectedModel.slug,
-      selectedModelName: selectedModel.name,
-      selectedFuelType,
-      phone: trimmedPhone
-    };
-
-    if (isPhoneValid) {
-      resetOtpFlow();
-      setPendingNavigation({ path: targetPath, state: navigationState });
-      setIsOtpModalOpen(true);
-      return;
-    }
-
-    navigateToTarget(targetPath, navigationState);
   };
 
   const handleOtpClose = () => {
@@ -406,7 +503,7 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
     }
   };
 
-  const handleOtpVerify = () => {
+  const handleOtpVerify = async () => {
     const enteredOtp = otpDigits.join('');
 
     if (enteredOtp.length !== OTP_LENGTH) {
@@ -427,7 +524,34 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
       return;
     }
 
-    navigateToTarget(pendingNavigation.path, pendingNavigation.state);
+    try {
+      setIsOtpVerifying(true);
+
+      const vehiclePayload = buildVehiclePayload();
+      const response = await logCustomerActivity({
+        phone: pendingNavigation.state.phone,
+        otpCode: enteredOtp,
+        vehicle: vehiclePayload
+      });
+
+      setSessionToken(response.sessionToken);
+      setSessionPhone(response.session.phone);
+
+      const nextState: VehicleNavigationState = {
+        ...pendingNavigation.state,
+        phone: response.session.phone
+      };
+
+      resetOtpFlow();
+      navigateToTarget(pendingNavigation.path, nextState);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unable to verify the OTP right now. Please try again.';
+      setOtpError(message);
+      console.error('Failed to verify OTP for hero form', error);
+    } finally {
+      setIsOtpVerifying(false);
+    }
   };
   const renderBrandContent = () => {
     if (isLoadingCatalog && !hasLoadedCatalog) {
@@ -667,9 +791,10 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
                 <button
                   type="button"
                   onClick={handleOtpVerify}
-                  className="flex-1 rounded-md bg-[#00AEEF] px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_10px_25px_rgba(2,150,228,0.25)] transition hover:bg-[#0285CE]"
+                  disabled={isOtpVerifying}
+                  className="flex-1 rounded-md bg-[#00AEEF] px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_10px_25px_rgba(2,150,228,0.25)] transition hover:bg-[#0285CE] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Verify &amp; Continue
+                  {isOtpVerifying ? 'Verifying...' : 'Verify & Continue'}
                 </button>
               </div>
             </div>
@@ -723,19 +848,26 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
               />
             )}
 
-            <button
-              type="submit"
-              disabled={isSubmitDisabled}
-              className={`mt-2 flex w-full items-center justify-center rounded-md px-6 py-4 text-sm font-semibold uppercase tracking-wide text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0285CE] ${
-                isSubmitDisabled
-                  ? 'cursor-not-allowed bg-[#00AEEF]/50'
-                  : 'bg-[#00AEEF] shadow-[0_15px_30px_rgba(2,150,228,0.35)] hover:bg-[#0285CE]'
-              }`}
-            >
-              {submitButtonLabel}
-            </button>
-            {message && <p className="text-xs font-medium text-[#0285CE]">{message}</p>}
-          </form>
+          <button
+            type="submit"
+            disabled={isSubmitDisabled}
+            className={`mt-2 flex w-full items-center justify-center rounded-md px-6 py-4 text-sm font-semibold uppercase tracking-wide text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0285CE] ${
+              isSubmitDisabled
+                ? 'cursor-not-allowed bg-[#00AEEF]/50'
+                : 'bg-[#00AEEF] shadow-[0_15px_30px_rgba(2,150,228,0.35)] hover:bg-[#0285CE]'
+            }`}
+          >
+            {submitButtonLabel}
+          </button>
+          {hasActiveSession && (
+            <p className="text-xs text-[#6c74a0]">
+              Logged in as{' '}
+              <span className="font-semibold text-[#0285CE]">{sessionPhone ?? 'a verified customer'}</span>. Your
+              searches are saved automatically.
+            </p>
+          )}
+          {message && <p className="text-xs font-medium text-[#0285CE]">{message}</p>}
+        </form>
 
           <div
             className={`absolute inset-0 z-20 overflow-hidden rounded-md bg-white transition-all duration-300 ease-out ${

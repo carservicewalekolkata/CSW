@@ -51,6 +51,10 @@ export const APIEndpoints = {
     brandIcon: (iconId: string) => `${API_VERSION}/cars/brands/icon/${iconId}`,
     modelIcon: (iconId: string) => `${API_VERSION}/cars/models/icon/${iconId}`,
   },
+
+  activity: {
+    customers: `${API_VERSION}/activity/customers`,
+  },
 } as const;
 
 export type ApiEndpointConfig = typeof APIEndpoints;
