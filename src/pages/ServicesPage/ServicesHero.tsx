@@ -11,14 +11,14 @@ export const ServicesHero = ({ title, description, badge }: ServicesHeroProps) =
     className="relative overflow-hidden bg-cover bg-center"
     style={{ backgroundImage: 'url(/images/backgrounds/banner-bg.jpg)' }}
   >
-    <div className="absolute inset-0 bg-indigo-950/75" />
+    <div className="absolute inset-0 bg-slate-300/25" />
     <div className="container-cs relative z-10 flex flex-col gap-10 py-20 lg:flex-row lg:items-center lg:justify-between">
       <div className="max-w-2xl space-y-5 text-white">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-200/80">Car Service Wale</p>
-        <h1 className="text-4xl font-bold leading-tight sm:text-5xl">{title}</h1>
-        <p className="text-lg text-white/80">{description}</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Car Service Wale</p>
+        <h1 className="text-4xl font-normal leading-tight tracking-tighter sm:text-5xl">{title}</h1>
+        <p className="text-lg text-slate-600">{description}</p>
         {badge ? (
-          <span className="inline-flex items-center rounded-full bg-white/15 px-4 py-1 text-sm font-semibold text-white">
+          <span className="inline-flex items-center rounded-full bg-white px-4 py-1 text-sm font-semibold text-slate-500">
             Vehicle: {badge}
           </span>
         ) : null}
@@ -28,7 +28,7 @@ export const ServicesHero = ({ title, description, badge }: ServicesHeroProps) =
           </Link>
           <Link
             to="/contact"
-            className="btn-secondary border-white/50 text-white hover:border-brand-200 hover:text-brand-200"
+            className="btn-secondary border-white/50 hover:border-brand-200 text-brand-500 hover:text-brand-400"
           >
             Speak to an advisor
           </Link>

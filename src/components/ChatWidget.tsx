@@ -2,7 +2,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 
 const ChatWidget = () => {
   return (
-    <div className="fixed bottom-6 right-6 hidden flex-col items-end gap-3 md:flex">
+    <div className="fixed bottom-14 right-14 hidden flex-col items-end gap-3 md:flex">
       <a
         href="https://wa.me/918904555007?text=Hi%20Car%20Service%20Wale,%20I%20need%20assistance%20with%20my%20vehicle."
         target="_blank"

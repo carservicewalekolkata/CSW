@@ -1,14 +1,15 @@
 import gsap from "gsap";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import type { HomeContent } from '@/hooks/useHomeContent';
+import { useHeroCarouselStore } from "@/store/heroCarouselStore";
 
 const HeroCarousel = ({ data }: { data: HomeContent['hero']; }) => {
     const slidesRef = useRef<HTMLDivElement[]>([]);
     const textRef = useRef<HTMLDivElement>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const [activeIndex, setActiveIndex] = useState(0);
+    const { activeIndex, nextSlide } = useHeroCarouselStore();
 
     const heroSlides = useMemo(
         () =>
@@ -52,17 +53,14 @@ const HeroCarousel = ({ data }: { data: HomeContent['hero']; }) => {
         };
 
         intervalRef.current = setInterval(() => {
-            setActiveIndex((prev) => {
-                const next = (prev + 1) % heroSlides.length;
-                playSlide(next);
-                return next;
-            });
+            const next = nextSlide(heroSlides.length)
+            playSlide(next)
         }, 5000);
 
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [heroSlides.length]);
+    }, [heroSlides.length, nextSlide]);
 
     return (
         <div className="relative lg:pl-20">
@@ -88,19 +86,10 @@ const HeroCarousel = ({ data }: { data: HomeContent['hero']; }) => {
                     24/7
                 </span>
                 <h1 data-hero-text className="text-xl font-semibold leading-snug text-[#2d1557] sm:text-xl">
-                    On spot Car &amp; Bike Mechanic
-                    <span className="block font-extrabold text-[#2d1557]">Repair Service</span>
+                    On spot Car 
+                    <span className="font-extrabold text-[#2d1557]"> Repair Service</span>
                 </h1>
                 <p data-hero-text className="max-w-md text-sm text-[#6c74a0]">{data.description}</p>
-                <div data-hero-text className="mt-4 flex items-center gap-3">
-                    {heroSlides.map((_, i) => (
-                        <span
-                            key={i}
-                            className={`h-2.5 w-2.5 rounded-full transition ${activeIndex === i ? 'scale-125 bg-[#1e51a3]' : 'bg-sky-200'
-                                }`}
-                        />
-                    ))}
-                </div>
             </div>
         </div>
     )

@@ -7,12 +7,11 @@ const renderPrice = (discountPrice?: number, originalPrice?: number) => {
 
   return (
     <div className="text-right">
-      <p className="text-xs uppercase tracking-wider text-slate-400">Starts at</p>
       {discountPrice ? (
-        <p className="text-2xl font-bold text-brand-600">₹{discountPrice.toLocaleString('en-IN')}</p>
+        <p className="text-lg font-bold text-brand-600">₹{discountPrice.toLocaleString('en-IN')}</p>
       ) : null}
       {originalPrice ? (
-        <p className="text-xs text-slate-400">MRP ₹{originalPrice.toLocaleString('en-IN')}</p>
+        <p className="text-xs text-slate-400 line-through">MRP ₹{originalPrice.toLocaleString('en-IN')}</p>
       ) : null}
     </div>
   );

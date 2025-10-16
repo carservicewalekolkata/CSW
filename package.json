@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint \"src/**/*.{ts,tsx}\""
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "generate:sitemaps": "node ./scripts/seo/generate-sitemaps.mjs"
   },
   "dependencies": {
     "@headlessui/react": "^2.1.9",

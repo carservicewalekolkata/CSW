@@ -199,28 +199,32 @@ export const useServicesPageState = ({
   const showCategoryFilters = !vehicleNotFound;
   const showLoadingState = isCatalogLoading || isVehicleDataLoading;
 
-  const vehicleHeading = vehicleSelection
-    ? `${vehicleSelection.fuelType} ${vehicleSelection.model.brandName} ${vehicleSelection.model.name}`
+  const cityName = currentCityName?.trim() ? currentCityName.trim() : 'your city';
+  const vehicleModelLabel = vehicleSelection
+    ? `${vehicleSelection.model.brandName} ${vehicleSelection.model.name}`.replace(/\s+/g, ' ').trim()
+    : null;
+  const vehicleFullLabel = vehicleModelLabel
+    ? [vehicleSelection?.fuelType, vehicleModelLabel].filter(Boolean).join(' ')
     : null;
 
-  const metaTitle = vehicleSelection
-    ? `Car Service Wale | ${vehicleSelection.model.brandName} ${vehicleSelection.model.name} Services`
-    : 'Car Service Wale | Services';
+  const metaTitle = vehicleModelLabel
+    ? `Best ${vehicleModelLabel} Service in ${cityName} | Car Service Wale`
+    : `Car Service Wale | Car Services in ${cityName}`;
 
-  const heroTitle = vehicleHeading ? `Services for ${vehicleHeading}` : 'Services we provide';
-  const heroDescription = vehicleHeading
-    ? `Curated maintenance, detailing, and repair packages tailored for your ${vehicleHeading}.`
-    : `Multiple options to choose, service anytime anywhere in ${currentCityName}. Our advisors craft the right combination of periodic maintenance, repairs, and detailing for every vehicle.`;
+  const heroTitle = vehicleModelLabel ? `Best ${vehicleModelLabel} Service in ${cityName}` : `Car services in ${cityName}`;
+  const heroDescription = vehicleModelLabel
+    ? `Keep your ${vehicleModelLabel} running like new with certified technicians in ${cityName}. Doorstep pick-up, genuine parts, and transparent pricing.`
+    : `Multiple options to choose, service anytime anywhere in ${cityName}. Our advisors craft the right combination of periodic maintenance, repairs, and detailing for every vehicle.`;
 
-  const metaDescription = vehicleHeading
-    ? `Discover workshop-grade servicing options for your ${vehicleHeading} in ${currentCityName}.`
-    : 'Browse doorstep car servicing, maintenance packages, emergency support, and smart add-ons tailored for your vehicle.';
+  const metaDescription = vehicleModelLabel
+    ? `Doorstep ${vehicleModelLabel} servicing in ${cityName}. Book periodic maintenance, repairs, and detailing with Car Service Wale experts.`
+    : `Browse doorstep car servicing, maintenance packages, emergency support, and smart add-ons tailored for vehicles across ${cityName}.`;
 
-  const packagesTitle = vehicleHeading
-    ? 'Recommended packages for your vehicle'
+  const packagesTitle = vehicleModelLabel
+    ? `Service packages for your ${vehicleModelLabel}`
     : 'Service packages crafted for Indian road conditions';
-  const packagesDescription = vehicleHeading
-    ? `Every package listed below is compatible with your ${vehicleHeading}.`
+  const packagesDescription = vehicleFullLabel
+    ? `Every package listed below is compatible with your ${vehicleFullLabel}.`
     : 'Pick a package or customise your own. All services include 40+ point inspection, transparent job cards, and complimentary pick-up & drop.';
 
   const emptyState = !showLoadingState && !vehicleNotFound && displayServices.length === 0
@@ -243,7 +247,7 @@ export const useServicesPageState = ({
     metaDescription,
     heroTitle,
     heroDescription,
-    vehicleBadge: vehicleHeading,
+    vehicleBadge: vehicleFullLabel,
     packagesTitle,
     packagesDescription,
     categoryFilters,
