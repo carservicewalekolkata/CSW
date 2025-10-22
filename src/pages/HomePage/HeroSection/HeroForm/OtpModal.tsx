@@ -1,7 +1,7 @@
 import type { ClipboardEvent, KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 
-import { MOCK_OTP_CODE, OTP_LENGTH } from '@/constants/homepageHeroSectionData';
+import { OTP_LENGTH } from '@/constants/homepageHeroSectionData';
 
 interface OtpModalProps {
   isOpen: boolean;
@@ -48,9 +48,7 @@ const OtpModal = ({
           </svg>
         </button>
         <h3 className="text-lg font-semibold text-[#2a1454]">Verify OTP</h3>
-        <p className="mt-2 text-sm text-[#6c74a0]">
-          Enter the {OTP_LENGTH}-digit code sent to {trimmedPhone || 'your phone number'}. Use {MOCK_OTP_CODE} to continue for now.
-        </p>
+        <p className="mt-2 text-sm text-[#6c74a0]">Enter the {OTP_LENGTH}-digit code sent to {trimmedPhone || 'your phone number'}.</p>
         <div className="mt-6 flex justify-center gap-3">
           {digits.map((digit, index) => (
             <input

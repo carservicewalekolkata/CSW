@@ -33,52 +33,6 @@ const DEFAULT_CONFIG = {
 const ensureTrailingSlash = (value) => (value.endsWith('/') ? value : `${value}/`);
 const trimTrailingSlash = (value) => value.replace(/\/+$/, '');
 
-const slugifySegment = (value) =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-const buildVehicleSlug = (fuelType, brandSlug, modelSlug) => {
-  const fuelSegment = slugifySegment(fuelType);
-  const brandSegment = slugifySegment(brandSlug);
-  const modelSegment = slugifySegment(modelSlug);
-  return `${fuelSegment}-${brandSegment}-${modelSegment}-services`;
-};
-
-const normalizeSlugValue = (value, fallback) => {
-  const trimmed = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (!trimmed || trimmed === 'null' || trimmed === 'undefined') {
-    return slugifySegment(fallback);
-  }
-  return slugifySegment(trimmed);
-};
-
-const toTitleCase = (value) =>
-  value
-    .toLowerCase()
-    .split(/\s+/)
-    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : ''))
-    .join(' ')
-    .trim();
-
-const normalizeFuelTypes = (fuelTypes) => {
-  const unique = new Set();
-  (fuelTypes ?? []).forEach((fuel) => {
-    if (!fuel || typeof fuel !== 'string') {
-      return;
-    }
-    const normalized = toTitleCase(fuel.trim());
-    if (normalized) {
-      unique.add(normalized);
-    }
-  });
-  return Array.from(unique);
-};
-
 const selectConfig = () => ({
   baseUrl: trimTrailingSlash(process.env.SITEMAP_BASE_URL ?? DEFAULT_CONFIG.baseUrl),
   backendUrl: trimTrailingSlash(process.env.SITEMAP_BACKEND_URL ?? DEFAULT_CONFIG.backendUrl),
@@ -98,72 +52,19 @@ const fetchJson = async (url) => {
   return response.json();
 };
 
-const normalizeBrands = (brands) =>
-  (brands ?? [])
-    .filter((brand) => brand?.status)
-    .map((brand) => ({
-      name: brand.name?.trim() ?? '',
-      slug: normalizeSlugValue(brand.slug, brand.name ?? '')
-    }))
-    .filter((brand) => brand.name && brand.slug);
-
-const createBrandLookup = (brands) => {
-  const lookup = new Map();
-  brands.forEach((brand) => {
-    lookup.set(brand.name.trim().toLowerCase(), brand);
-  });
-  return lookup;
-};
-
-const normalizeModels = (models, brandLookup) =>
-  (models ?? [])
-    .filter((model) => model?.status)
-    .map((model) => {
-      const brandKey = (model.brand_name ?? '').trim().toLowerCase();
-      const brand = brandLookup.get(brandKey);
-      if (!brand) {
-        return null;
-      }
-
-      const fuelTypes = normalizeFuelTypes(model.fuel_type);
-      if (fuelTypes.length === 0) {
-        return null;
-      }
-
-      return {
-        brandName: brand.name,
-        brandSlug: brand.slug,
-        modelName: model.name?.trim() ?? '',
-        modelSlug: normalizeSlugValue(model.slug, model.name ?? ''),
-        fuelTypes,
-        updatedAt: model.updated_date ?? model.created_date ?? null
-      };
-    })
-    .filter((model) => model && model.modelName && model.modelSlug);
-
-const fetchVehicleCatalog = async (backendUrl) => {
+const fetchVehicleSitemapEntries = async (backendUrl) => {
   const params = new URLSearchParams({
-    sortStatus: 'active-first',
-    sortUpdated: 'desc',
-    limit: '500'
+    includeInactive: 'false',
+    limit: '5000'
   });
 
-  const [brandResponse, modelResponse] = await Promise.all([
-    fetchJson(`${ensureTrailingSlash(backendUrl)}v1/cars/brands?${params.toString()}`),
-    fetchJson(`${ensureTrailingSlash(backendUrl)}v1/cars/models?${params.toString()}`)
-  ]);
+  const response = await fetchJson(`${ensureTrailingSlash(backendUrl)}v1/seo/sitemaps?${params.toString()}`);
 
-  if (!brandResponse?.success) {
-    throw new Error(brandResponse?.message ?? 'Unable to fetch brands for sitemap generation.');
+  if (!response?.success) {
+    throw new Error(response?.message ?? 'Unable to fetch vehicle sitemap entries.');
   }
 
-  if (!modelResponse?.success) {
-    throw new Error(modelResponse?.message ?? 'Unable to fetch models for sitemap generation.');
-  }
-
-  const brands = normalizeBrands(brandResponse.data);
-  const brandLookup = createBrandLookup(brands);
-  return normalizeModels(modelResponse.data, brandLookup);
+  return response.data ?? [];
 };
 
 const formatDate = (value, fallback) => {
@@ -229,25 +130,16 @@ const collectStaticEntries = (routes, baseUrl, generatedOn) =>
       priority: route === '/' ? '1.0' : '0.8'
     }));
 
-const collectServiceEntries = (models, baseUrl, generatedOn) => {
-  const entries = [];
-
-  models.forEach((model) => {
-    const lastmod = formatDate(model.updatedAt, generatedOn);
-    model.fuelTypes.forEach((fuelType) => {
-      const slug = buildVehicleSlug(fuelType, model.brandSlug, model.modelSlug);
-      const route = `/services/${slug}`;
-      entries.push({
-        loc: toAbsoluteUrl(baseUrl, route),
-        lastmod,
-        changefreq: 'weekly',
-        priority: '0.7'
-      });
-    });
-  });
-
-  return entries.sort((a, b) => a.loc.localeCompare(b.loc));
-};
+const collectServiceEntries = (entries, baseUrl, generatedOn) =>
+  (entries ?? [])
+    .filter((entry) => entry && typeof entry.path === 'string' && entry.path.trim().length > 0)
+    .map((entry) => ({
+      loc: toAbsoluteUrl(baseUrl, entry.path),
+      lastmod: formatDate(entry.last_modified, generatedOn),
+      changefreq: 'weekly',
+      priority: '0.7'
+    }))
+    .sort((a, b) => a.loc.localeCompare(b.loc));
 
 const writeFileSafe = async (filePath, contents) => {
   await mkdir(path.dirname(filePath), { recursive: true });
@@ -263,10 +155,10 @@ const main = async () => {
   const outputDir = path.join(projectRoot, config.outputDir);
   const sitemapDir = path.join(outputDir, 'sitemaps');
 
-  const models = await fetchVehicleCatalog(config.backendUrl);
+  const vehicleEntries = await fetchVehicleSitemapEntries(config.backendUrl);
 
   const staticEntries = collectStaticEntries(config.staticRoutes, config.baseUrl, generatedOn);
-  const serviceEntries = collectServiceEntries(models, config.baseUrl, generatedOn);
+  const serviceEntries = collectServiceEntries(vehicleEntries, config.baseUrl, generatedOn);
 
   const staticSitemapPath = path.join(sitemapDir, 'sitemap-static.xml');
   const serviceSitemapPath = path.join(sitemapDir, 'sitemap-services.xml');

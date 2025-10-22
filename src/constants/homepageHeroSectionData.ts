@@ -12,7 +12,6 @@ export const FUEL_ICON_MAP: Record<string, string> = {
 };
 
 export const PHONE_NUMBER_PATTERN = /^\d{10}$/;
-export const MOCK_OTP_CODE = '1234';
 export const OTP_LENGTH = 4;
 
 export const SESSION_TOKEN_STORAGE_KEY = 'csw_customer_session_token';

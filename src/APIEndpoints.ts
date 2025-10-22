@@ -34,6 +34,8 @@ export const APIEndpoints = {
     refresh: `${API_VERSION}/auth/refresh`,
     status: `${API_VERSION}/auth/status`,
     forgotPassword: `${API_VERSION}/auth/forgot-password`,
+    sendOtp: `${API_VERSION}/auth/send-otp`,
+    verifyOtp: `${API_VERSION}/auth/verify-otp`,
   },
 
   admin: {

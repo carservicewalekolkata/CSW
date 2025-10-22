@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { ClipboardEvent, KeyboardEvent } from 'react';
 
 import { logCustomerActivity } from '@/lib/customerActivityClient';
+import { requestOtpCode, verifyOtpCode } from '@/lib/otpClient';
 
-import { MOCK_OTP_CODE, OTP_LENGTH } from '@/constants/homepageHeroSectionData';
+import { OTP_LENGTH } from '@/constants/homepageHeroSectionData';
 import type { PendingNavigationState, VehicleNavigationState, VehiclePayload } from '@/types/homepageHeroFormTypes';
 
 interface UseHeroOtpOptions {
@@ -13,12 +14,30 @@ interface UseHeroOtpOptions {
   setSessionPhone: (phone: string) => void;
 }
 
+const extractErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) {
+    try {
+      const parsed = JSON.parse(error.message);
+      if (parsed && typeof parsed === 'object' && typeof (parsed as { message?: unknown }).message === 'string') {
+        return (parsed as { message: string }).message;
+      }
+    } catch {
+      // ignore parsing issues – fail back to message string
+    }
+    return error.message;
+  }
+  return fallback;
+};
+
 export const useHeroOtp = ({ getVehiclePayload, onSuccess, setSessionToken, setSessionPhone }: UseHeroOtpOptions) => {
   const [otpDigits, setOtpDigits] = useState<string[]>(() => Array(OTP_LENGTH).fill(''));
   const [otpError, setOtpError] = useState('');
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isOtpVerifying, setIsOtpVerifying] = useState(false);
+  const [isOtpSending, setIsOtpSending] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<PendingNavigationState | null>(null);
+  const [otpRequestId, setOtpRequestId] = useState<string | null>(null);
+  const [otpPhone, setOtpPhone] = useState<string | null>(null);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const focusOtpInput = (index: number) => {
@@ -33,14 +52,18 @@ export const useHeroOtp = ({ getVehiclePayload, onSuccess, setSessionToken, setS
     setOtpDigits(Array(OTP_LENGTH).fill(''));
     setOtpError('');
     setPendingNavigation(null);
+    setOtpRequestId(null);
+    setOtpPhone(null);
     setIsOtpModalOpen(false);
     setIsOtpVerifying(false);
   };
 
-  const startOtpFlow = (navigation: PendingNavigationState) => {
+  const startOtpFlow = (navigation: PendingNavigationState, requestId: string, phone: string) => {
     setOtpDigits(Array(OTP_LENGTH).fill(''));
     setOtpError('');
     setPendingNavigation(navigation);
+    setOtpRequestId(requestId);
+    setOtpPhone(phone);
     setIsOtpModalOpen(true);
   };
 
@@ -111,13 +134,13 @@ export const useHeroOtp = ({ getVehiclePayload, onSuccess, setSessionToken, setS
       focusOtpInput(firstEmptyIndex >= 0 ? firstEmptyIndex : OTP_LENGTH - 1);
       return;
     }
-    if (enteredOtp !== MOCK_OTP_CODE) {
-      setOtpError('Incorrect OTP. Please try again.');
-      setOtpDigits(Array(OTP_LENGTH).fill(''));
-      focusOtpInput(0);
+    if (!pendingNavigation) return;
+
+    if (!otpRequestId || !otpPhone) {
+      setOtpError('Your OTP session has expired. Please request a new OTP.');
+      window.alert('Your OTP session has expired. Please request a new OTP.');
       return;
     }
-    if (!pendingNavigation) return;
 
     const vehiclePayload = getVehiclePayload();
     if (!vehiclePayload) {
@@ -127,9 +150,11 @@ export const useHeroOtp = ({ getVehiclePayload, onSuccess, setSessionToken, setS
 
     try {
       setIsOtpVerifying(true);
+      await verifyOtpCode({ requestId: otpRequestId, phone: pendingNavigation.state.phone, otp: enteredOtp });
+      window.alert('OTP verified successfully.');
       const response = await logCustomerActivity({
         phone: pendingNavigation.state.phone,
-        otpCode: enteredOtp,
+        otpRequestId,
         vehicle: vehiclePayload
       });
 
@@ -144,10 +169,10 @@ export const useHeroOtp = ({ getVehiclePayload, onSuccess, setSessionToken, setS
       resetOtpFlow();
       onSuccess(pendingNavigation.path, nextState);
     } catch (error) {
-      const messageText =
-        error instanceof Error ? error.message : 'Unable to verify the OTP right now. Please try again.';
+      const messageText = extractErrorMessage(error, 'Unable to verify the OTP right now. Please try again.');
       setOtpError(messageText);
       console.error('Failed to verify OTP for hero form', error);
+      window.alert(messageText);
     } finally {
       setIsOtpVerifying(false);
     }
@@ -158,9 +183,23 @@ export const useHeroOtp = ({ getVehiclePayload, onSuccess, setSessionToken, setS
   };
 
   return {
-    startOtpFlow,
+    requestOtp: async (phone: string, navigation: PendingNavigationState) => {
+      const trimmedPhone = phone.replace(/\D/g, '');
+      try {
+        setIsOtpSending(true);
+        const response = await requestOtpCode(trimmedPhone);
+        startOtpFlow(navigation, response.requestId, trimmedPhone);
+      } catch (error) {
+        const messageText = extractErrorMessage(error, 'Unable to send OTP right now. Please try again.');
+        console.error('Failed to request OTP for hero form', error);
+        throw new Error(messageText);
+      } finally {
+        setIsOtpSending(false);
+      }
+    },
     resetOtpFlow,
     hasPendingNavigation: Boolean(pendingNavigation),
+    isSendingOtp: isOtpSending,
     otpModal: {
       isOpen: isOtpModalOpen,
       digits: otpDigits,

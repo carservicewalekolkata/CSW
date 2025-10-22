@@ -26,7 +26,7 @@ export type CustomerSessionRecord = {
 export type CustomerActivityRequest = {
   sessionToken?: string
   phone?: string
-  otpCode?: string
+  otpRequestId?: string
   vehicle: CustomerActivityVehicle
 }
 

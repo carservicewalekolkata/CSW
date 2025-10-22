@@ -59,9 +59,11 @@ export const useHeroFormState = (data: HomeContent['hero']) => {
   const trimmedPhone = phone.trim();
   const isPhoneEntered = trimmedPhone.length > 0;
   const isPhoneValid = PHONE_NUMBER_PATTERN.test(trimmedPhone);
-  const isSubmitDisabled = !selection.hasCompletedSelection || isProcessing;
+  const isSubmitDisabled = !selection.hasCompletedSelection || isProcessing || otp.isSendingOtp;
   const submitButtonLabel = isProcessing
     ? 'Saving...'
+    : otp.isSendingOtp
+    ? 'Sending OTP...'
     : hasActiveSession
     ? 'Get A Quote'
     : isPhoneValid
@@ -144,7 +146,12 @@ export const useHeroFormState = (data: HomeContent['hero']) => {
 
     if (isPhoneValid) {
       const pending: PendingNavigationState = { path: targetPath, state: navigationState };
-      otp.startOtpFlow(pending);
+      try {
+        await otp.requestOtp(trimmedPhone, pending);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unable to send OTP. Please try again.';
+        setMessage(errorMessage);
+      }
       return;
     }
 

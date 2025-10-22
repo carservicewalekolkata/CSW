@@ -150,6 +150,26 @@ const normalizeModels = (models: ModelResponse['data'], brandLookup: Map<string,
 
       const modelSlug = normalizeSlugValue(model.slug, model.name);
 
+      const toPreviewPath = (value: string | null | undefined): string | null => {
+        if (typeof value !== 'string') {
+          return null;
+        }
+
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return null;
+        }
+
+        if (trimmed.startsWith('azure:')) {
+          return `/api/v1/cars/models/image/blob/${trimmed.slice('azure:'.length)}`;
+        }
+
+        return trimmed;
+      };
+
+      const previewPath =
+        toPreviewPath(model.image) ?? toPreviewPath(model.thumbnail) ?? toPreviewPath(model.image_path);
+
       return {
         id: model.id,
         name: model.name.trim(),
@@ -157,7 +177,7 @@ const normalizeModels = (models: ModelResponse['data'], brandLookup: Map<string,
         brandName: model.brand_name ?? brand.name,
         brandSlug: brand.slug,
         fuelTypes: normalizeFuelTypes(model.fuel_type),
-        thumbnailUrl: resolveBackendAssetUrl(model.thumbnail ?? model.image),
+        thumbnailUrl: resolveBackendAssetUrl(previewPath ?? null),
         services: normalizeModelServices(model.services)
       };
     })
@@ -175,6 +195,52 @@ const groupModelsByBrand = (models: VehicleModel[]): ModelsByBrand => {
   });
 
   return grouped;
+};
+
+const MODELS_PAGE_SIZE = 100;
+const MAX_MODEL_PAGES = 20;
+
+const fetchFullModelCatalogue = async (): Promise<Model[]> => {
+  const modelsById = new Map<number, Model>();
+  let total = Number.POSITIVE_INFINITY;
+  let page = 1;
+
+  while (modelsById.size < total && page <= MAX_MODEL_PAGES) {
+    const response = await apiRequest<ModelResponse>({
+      endpoint: buildEndpoint(APIEndpoints.cars.models, {
+        sortStatus: 'active-first',
+        sortUpdated: 'desc',
+        page,
+        limit: MODELS_PAGE_SIZE
+      })
+    });
+
+    if (!response.success) {
+      throw new Error(response.message ?? 'Unable to fetch car models.');
+    }
+
+    (response.data ?? []).forEach((model) => {
+      if (model && typeof model.id === 'number') {
+        modelsById.set(model.id, model);
+      }
+    });
+
+    const fetchedCount = response.data?.length ?? 0;
+    total =
+      typeof response.total === 'number' && response.total > 0 ? response.total : modelsById.size;
+
+    if (fetchedCount === 0 || modelsById.size >= total) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  if (modelsById.size < total && page > MAX_MODEL_PAGES) {
+    console.warn('Reached maximum page limit while fetching car models; some models may be omitted.');
+  }
+
+  return Array.from(modelsById.values());
 };
 
 export const useVehicleStore = create<VehicleState>((set, get) => ({
@@ -196,7 +262,7 @@ export const useVehicleStore = create<VehicleState>((set, get) => ({
     set({ isLoadingCatalog: true, catalogError: undefined });
 
     try {
-      const [brandResponse, modelResponse] = await Promise.all([
+      const [brandResponse, modelsData] = await Promise.all([
         apiRequest<BrandResponse>({
           endpoint: buildEndpoint(APIEndpoints.cars.brands, {
             sortStatus: 'active-first',
@@ -204,26 +270,16 @@ export const useVehicleStore = create<VehicleState>((set, get) => ({
             limit: 200
           })
         }),
-        apiRequest<ModelResponse>({
-          endpoint: buildEndpoint(APIEndpoints.cars.models, {
-            sortStatus: 'active-first',
-            sortUpdated: 'desc',
-            limit: 500
-          })
-        })
+        fetchFullModelCatalogue()
       ]);
 
       if (!brandResponse.success) {
         throw new Error(brandResponse.message ?? 'Unable to fetch car brands.');
       }
 
-      if (!modelResponse.success) {
-        throw new Error(modelResponse.message ?? 'Unable to fetch car models.');
-      }
-
       const normalizedBrands = normalizeBrands(brandResponse.data);
       const brandLookup = createBrandLookup(normalizedBrands);
-      const normalizedModels = normalizeModels(modelResponse.data, brandLookup);
+      const normalizedModels = normalizeModels(modelsData, brandLookup);
       const modelsByBrand = groupModelsByBrand(normalizedModels);
 
       set({
