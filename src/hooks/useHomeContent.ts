@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { ServiceCatalog, ServiceWithMetadata } from './useServiceCatalog';
+import type { ServiceCategory } from '@/types/api';
+import type { ServiceCatalog } from './useServiceCatalog';
 import { fetchServiceCatalog, serviceCatalogQueryKey } from './useServiceCatalog';
 
 export interface HomeContent {
@@ -13,8 +14,8 @@ export interface HomeContent {
   };
   usp: { icon: string; title: string; description: string }[];
   services: {
-    primary: { name: string; icon: string; href: string }[];
-    custom: { name: string; icon: string; href: string }[];
+    primary: { id: number; name: string; description: string; href: string }[];
+    custom: { id: number; name: string; description: string; href: string }[];
   };
   costComparisons: {
     title: string;
@@ -41,20 +42,38 @@ const FALLBACK_HERO_BRANDS: HomeContent['hero']['brands'] = [];
 
 const FALLBACK_SERVICE_GROUPS: HomeContent['services'] = {
   primary: [
-    { name: 'Periodic Service', icon: '/images/icons/services/clutch-disc.svg', href: '/services' },
-    { name: 'Engine Repair', icon: '/images/icons/services/s2.svg', href: '/services' },
-    { name: 'Electrical & Diagnostics', icon: '/images/icons/services/s3.svg', href: '/services' },
-    { name: 'Denting & Painting', icon: '/images/icons/services/s4.svg', href: '/services' },
-    { name: 'Wheel Care', icon: '/images/icons/services/t-s-4.svg', href: '/services' },
-    { name: 'AC Service', icon: '/images/icons/services/t-s-6.svg', href: '/services' }
+    {
+      id: 1,
+      name: 'Periodic Service',
+      description: 'Scheduled maintenance packages to keep your vehicle in peak condition.',
+      href: '/services'
+    },
+    {
+      id: 2,
+      name: 'Engine Repair',
+      description: 'Comprehensive engine diagnostics, rebuilds, and component replacements.',
+      href: '/services'
+    },
+    {
+      id: 3,
+      name: 'Electrical & Diagnostics',
+      description: 'Advanced electrical troubleshooting and ECU health checks.',
+      href: '/services'
+    }
   ],
   custom: [
-    { name: 'Clutch Service', icon: '/images/icons/services/clutch-disc.svg', href: '/services' },
-    { name: 'Gearbox', icon: '/images/icons/services/s2.svg', href: '/services' },
-    { name: 'Spark Plug', icon: '/images/icons/services/s3.svg', href: '/services' },
-    { name: 'Denting Painting', icon: '/images/icons/services/s4.svg', href: '/services' },
-    { name: 'Wheel Service', icon: '/images/icons/services/t-s-4.svg', href: '/services' },
-    { name: 'AC Service', icon: '/images/icons/services/t-s-6.svg', href: '/services' }
+    {
+      id: 4,
+      name: 'Custom Restoration',
+      description: 'Tailor-made projects for restoration, upgrades, and speciality builds.',
+      href: '/services'
+    },
+    {
+      id: 5,
+      name: 'Performance Tuning',
+      description: 'Custom tuning packages for enthusiasts seeking more power and control.',
+      href: '/services'
+    }
   ]
 };
 
@@ -208,28 +227,24 @@ const APP_PROMO: HomeContent['appPromo'] = {
   image: '/images/icons/general/mobile.svg'
 };
 
-const FALLBACK_ICON = '/images/icons/services/default.svg';
+const toCategoryCard = (category: ServiceCategory): HomeContent['services']['primary'][number] => ({
+  id: category.id,
+  name: category.name,
+  description: (() => {
+    const fallback = 'Explore tailored packages designed by our expert mechanics.';
+    const source = category.description && category.description.length > 0 ? category.description : fallback;
+    return source.length > 160 ? `${source.slice(0, 157)}...` : source;
+  })(),
+  href: '/services'
+});
 
-const toServiceCard = (service: ServiceWithMetadata): HomeContent['services']['primary'][number] => {
-  const icon = service.thumbnailUrl ?? service.serviceImages[0] ?? FALLBACK_ICON;
-  const href = `/services?service=${encodeURIComponent(service.id)}`;
-
-  return {
-    name: service.name,
-    icon,
-    href
-  };
-};
-
-const createServiceGroups = (services: ServiceCatalog['services']): HomeContent['services'] => {
-  if (!services.length) {
+const createServiceGroups = (categories: ServiceCatalog['categories']): HomeContent['services'] => {
+  if (!categories.length) {
     return FALLBACK_SERVICE_GROUPS;
   }
 
-  const cards = services.map(toServiceCard).filter((item) => Boolean(item.icon)).slice(0, 12);
-
-  const primary = cards.slice(0, 6);
-  const custom = cards.slice(6, 12);
+  const primary = categories.filter((category) => category.type !== 'custom').map(toCategoryCard).slice(0, 8);
+  const custom = categories.filter((category) => category.type === 'custom').map(toCategoryCard).slice(0, 8);
 
   return {
     primary: primary.length ? primary : FALLBACK_SERVICE_GROUPS.primary,
@@ -238,7 +253,7 @@ const createServiceGroups = (services: ServiceCatalog['services']): HomeContent[
 };
 
 const toHomeContent = (catalog: ServiceCatalog): HomeContent => {
-  const serviceGroups = createServiceGroups(catalog.services);
+  const serviceGroups = createServiceGroups(catalog.categories);
 
   const brandLogos = catalog.brands
     .map((brand) => brand.iconUrl)

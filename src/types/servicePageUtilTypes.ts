@@ -11,6 +11,7 @@ export type VehicleRouteState = {
   selectedModelSlug?: string;
   selectedModelName?: string;
   selectedFuelType?: string;
+  selectedCategoryId?: number;
   phone?: string;
 };
 

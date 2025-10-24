@@ -29,6 +29,8 @@ export interface Service {
 export interface ServiceCategory {
   id: number;
   name: string;
+  description: string | null;
+  type: 'basic' | 'custom';
   created_date: string | null;
   updated_date: string | null;
 }

@@ -56,6 +56,17 @@ export const useServicesPageState = ({
   }, [fetchVehicleCatalog, hasLoadedVehicleCatalog, isLoadingVehicleCatalog]);
 
   const services = useMemo(() => catalog?.services ?? [], [catalog]);
+  const categories = catalog?.categories ?? null;
+  const categoryKeyFromState = useMemo(() => {
+    if (!routeState?.selectedCategoryId || !categories || categories.length === 0) {
+      return null;
+    }
+    const category = categories.find((item) => item.id === routeState.selectedCategoryId);
+    if (!category?.name) {
+      return null;
+    }
+    return normalizeCategoryKey(category.name);
+  }, [categories, routeState?.selectedCategoryId]);
   const allModels = useMemo<VehicleModel[]>(
     () => Object.values(modelsByBrand).flatMap((list) => list),
     [modelsByBrand]
@@ -97,6 +108,12 @@ export const useServicesPageState = ({
       setActiveCategoryKey(null);
     }
   }, [vehicleSelection]);
+
+  useEffect(() => {
+    if (categoryKeyFromState) {
+      setActiveCategoryKey(categoryKeyFromState);
+    }
+  }, [categoryKeyFromState]);
 
   const servicesById = useMemo(() => {
     const map = new Map<string, ServiceWithMetadata>();
