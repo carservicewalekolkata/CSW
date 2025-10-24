@@ -6,9 +6,8 @@ import { logCustomerActivity } from '@/lib/customerActivityClient';
 import { buildVehiclePath } from '@/utils/vehicleSlug';
 
 import { PHONE_NUMBER_PATTERN } from '@/constants/homepageHeroSectionData';
-import type { PendingNavigationState, VehicleNavigationState, VehiclePayload } from '@/types/homepageHeroFormTypes';
+import type { VehicleNavigationState, VehiclePayload } from '@/types/homepageHeroFormTypes';
 import { useHeroHeadline } from './useHeroHeadline';
-import { useHeroOtp } from './useHeroOtp';
 import { useHeroSelectionSheet } from './useHeroSelectionSheet';
 import { useHeroSession } from './useHeroSession';
 
@@ -53,37 +52,24 @@ export const useHeroFormState = (data: HomeContent['hero']) => {
     selection.resetVehicleSelection();
   };
 
-  const otp = useHeroOtp({ getVehiclePayload, onSuccess: navigateToTarget, setSessionToken, setSessionPhone });
-
   const shouldShowPhoneField = selection.hasCompletedSelection && !hasActiveSession;
   const trimmedPhone = phone.trim();
   const isPhoneEntered = trimmedPhone.length > 0;
   const isPhoneValid = PHONE_NUMBER_PATTERN.test(trimmedPhone);
-  const isSubmitDisabled = !selection.hasCompletedSelection || isProcessing || otp.isSendingOtp;
-  const submitButtonLabel = isProcessing
-    ? 'Saving...'
-    : otp.isSendingOtp
-    ? 'Sending OTP...'
-    : hasActiveSession
-    ? 'Get A Quote'
-    : isPhoneValid
-    ? 'Get OTP'
-    : 'Get A Quote';
+  const isSubmitDisabled =
+    !selection.hasCompletedSelection || isProcessing || (shouldShowPhoneField && !isPhoneValid);
+  const submitButtonLabel = isProcessing ? 'Saving...' : 'Get A Quote';
 
   const handleClearSelection = () => {
     selection.resetVehicleSelection();
     setPhone('');
     setMessage('');
-    otp.resetOtpFlow();
   };
 
   const handlePhoneChange = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 10);
     setPhone(digits);
     clearMessage();
-    if (otp.otpModal.isOpen || otp.hasPendingNavigation || otp.otpModal.digits.some(Boolean) || otp.otpModal.error) {
-      otp.resetOtpFlow();
-    }
   };
 
   const ensureSelection = () => {
@@ -139,18 +125,25 @@ export const useHeroFormState = (data: HomeContent['hero']) => {
       return;
     }
 
-    if (isPhoneEntered && !isPhoneValid) {
-      setMessage('Please enter a valid 10-digit mobile number.');
-      return;
-    }
+    if (!hasActiveSession) {
+      if (!isPhoneValid) {
+        setMessage(isPhoneEntered ? 'Please enter a valid 10-digit mobile number.' : 'Mobile number is required.');
+        return;
+      }
 
-    if (isPhoneValid) {
-      const pending: PendingNavigationState = { path: targetPath, state: navigationState };
       try {
-        await otp.requestOtp(trimmedPhone, pending);
+        setIsProcessing(true);
+        const response = await logCustomerActivity({ phone: trimmedPhone, vehicle: vehiclePayload });
+        setSessionToken(response.sessionToken);
+        setSessionPhone(response.session.phone);
+        navigateToTarget(targetPath, { ...navigationState, phone: response.session.phone });
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unable to send OTP. Please try again.';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unable to save your details right now. Please try again.';
         setMessage(errorMessage);
+        console.error('Failed to save hero form submission', error);
+      } finally {
+        setIsProcessing(false);
       }
       return;
     }
@@ -171,12 +164,10 @@ export const useHeroFormState = (data: HomeContent['hero']) => {
     sessionPhone,
     submitButtonLabel,
     isSubmitDisabled,
-    trimmedPhone,
     handleSubmit,
     handlePhoneChange,
     handleClearSelection,
     openSelector: selection.openSelector,
-    sheet: selection.sheet,
-    otp: otp.otpModal
+    sheet: selection.sheet
   };
 };

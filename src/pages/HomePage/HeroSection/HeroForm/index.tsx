@@ -9,7 +9,6 @@ import AccentFormField from '@/components/AccentFormField';
 import BrandStep from './BrandStep';
 import FuelStep from './FuelStep';
 import ModelStep from './ModelStep';
-import OtpModal from './OtpModal';
 import SelectionSheet from './SelectionSheet';
 import VehicleSelectionInput from './VehicleSelectionInput';
 import { useHeroCarouselStore } from '@/store/heroCarouselStore';
@@ -29,13 +28,11 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
     sessionPhone,
     submitButtonLabel,
     isSubmitDisabled,
-    trimmedPhone,
     handleSubmit,
     handlePhoneChange,
     handleClearSelection,
     openSelector,
-    sheet,
-    otp
+    sheet
   } = useHeroFormState(data);
 
   const { activeIndex } = useHeroCarouselStore();
@@ -85,7 +82,7 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
 
               {shouldShowPhoneField && (
                 <AccentFormField
-                  label="Enter Mobile Number (Optional)"
+                  label="Enter Mobile Number"
                   type="tel"
                   value={phone}
                   onChange={(event) => handlePhoneChange(event.target.value)}
@@ -148,20 +145,6 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
           ))}
         </div>
       </div>
-
-      <OtpModal
-        isOpen={otp.isOpen}
-        trimmedPhone={trimmedPhone}
-        digits={otp.digits}
-        error={otp.error}
-        isVerifying={otp.isVerifying}
-        onClose={otp.onClose}
-        onDigitChange={otp.onDigitChange}
-        onKeyDown={otp.onKeyDown}
-        onPaste={otp.onPaste}
-        onVerify={otp.onVerify}
-        setInputRef={otp.setInputRef}
-      />
     </>
   );
 };
