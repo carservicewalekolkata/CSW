@@ -7,24 +7,6 @@ interface WhyUsSectionProps {
 const WhyUsSection = ({ items }: WhyUsSectionProps) => {
   return (
     <section className="relative overflow-hidden bg-white py-24">
-      {/* <div className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-[#E7F4FF] via-white to-[#F6EEFF]"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-0 bg-[url('/images/backgrounds/doot.svg')] bg-cover bg-center opacity-35"
-          aria-hidden
-        />
-        <div
-          className="absolute -left-32 top-1/2 hidden h-[680px] w-[680px] -translate-y-1/2 rounded-full bg-[#E4F3FF] blur-[140px] opacity-90 lg:block"
-          aria-hidden
-        />
-        <div
-          className="absolute -right-32 top-10 hidden h-[560px] w-[560px] rounded-full bg-[#F3E9FF] blur-[160px] opacity-80 lg:block"
-          aria-hidden
-        />
-      </div> */}
 
       <div className="container-cs relative z-10 grid gap-12 lg:grid-cols-[minmax(0,640px)_minmax(0,520px)] lg:items-start lg:gap-20">
         <div className="order-2 flex justify-center lg:order-1 mt-5 lg:justify-start">
@@ -64,7 +46,7 @@ const WhyUsSection = ({ items }: WhyUsSectionProps) => {
                 `}
               >
                 <div
-                  className="group relative grid h-[90px] w-[80%] grid-cols-[auto_1fr] items-center gap-10 overflow-hidden rounded-lg border border-white/20 bg-white px-8 shadow-[0_40px_80px_rgba(8,29,73,0.18)] transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_50px_110px_rgba(8,29,73,0.22)] md:gap-8 md:px-5"
+                  className="group relative grid h-[90px] w-4/5 grid-cols-[auto_1fr] items-center gap-10 overflow-hidden rounded-lg border border-white/20 bg-white px-8 shadow-[0_40px_80px_rgba(8,29,73,0.18)] transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_50px_110px_rgba(8,29,73,0.22)] md:gap-8 md:px-5"
                 >
                   <div className="relative z-10 flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-brand-900 text-white">
                     <img src={item.icon} alt={item.title} className="h-12 w-12 object-contain z-10" loading="lazy" />
