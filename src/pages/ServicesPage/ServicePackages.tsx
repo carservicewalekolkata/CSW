@@ -158,7 +158,12 @@ export const ServicePackages = ({
 
       {activeService ? (
         <>
-          <div className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-[2px]" onClick={closeModal} />
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-[2px]"
+            onClick={closeModal}
+            aria-label="Dismiss service details"
+          />
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
             <div className="w-full max-w-2xl rounded-3xl bg-white p-8 shadow-deep">
               <div className="flex items-start justify-between gap-4">

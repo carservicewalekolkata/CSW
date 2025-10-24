@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useEmblaCarousel from 'embla-carousel-react';
 import { FaGear } from 'react-icons/fa6';
@@ -17,7 +17,7 @@ type TabId = (typeof tabs)[number]['id'];
 
 const ServiceSection = ({ data }: ServiceSectionProps) => {
   const [activeTab, setActiveTab] = useState<TabId>('primary');
-  const services = data[activeTab] ?? [];
+  const services = useMemo(() => data[activeTab] ?? [], [data, activeTab]);
   const hasServices = services.length > 0;
   useEffect(() => {
     const hasPrimary = (data.primary ?? []).length > 0;

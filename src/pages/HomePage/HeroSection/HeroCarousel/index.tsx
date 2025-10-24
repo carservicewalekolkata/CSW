@@ -9,7 +9,7 @@ const HeroCarousel = ({ data }: { data: HomeContent['hero']; }) => {
     const textRef = useRef<HTMLDivElement>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const { activeIndex, nextSlide } = useHeroCarouselStore();
+    const nextSlide = useHeroCarouselStore((state) => state.nextSlide);
 
     const heroSlides = useMemo(
         () =>
