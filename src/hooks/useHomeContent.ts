@@ -37,13 +37,7 @@ const HERO_COPY = {
   ctaText: 'Get a Quote'
 } as const;
 
-const FALLBACK_HERO_BRANDS: HomeContent['hero']['brands'] = [
-  { name: 'Audi', logo: '/images/logos/brands/brand-1.svg' },
-  { name: 'BMW', logo: '/images/logos/brands/brand-2.svg' },
-  { name: 'Honda', logo: '/images/logos/brands/brand-3.svg' },
-  { name: 'Hyundai', logo: '/images/logos/brands/brand-4.svg' },
-  { name: 'Maruti Suzuki', logo: '/images/logos/brands/brand-5.svg' }
-];
+const FALLBACK_HERO_BRANDS: HomeContent['hero']['brands'] = [];
 
 const FALLBACK_SERVICE_GROUPS: HomeContent['services'] = {
   primary: [
@@ -207,24 +201,6 @@ const PROCESS_STEPS: HomeContent['process'] = [
   }
 ];
 
-const FALLBACK_BRAND_LOGOS: string[] = [
-  '/images/logos/brands/brand-1.svg',
-  '/images/logos/brands/brand-2.svg',
-  '/images/logos/brands/brand-3.svg',
-  '/images/logos/brands/brand-4.svg',
-  '/images/logos/brands/brand-5.svg',
-  '/images/logos/brands/brand-6.svg',
-  '/images/logos/brands/brand-7.svg',
-  '/images/logos/brands/brand-8.svg',
-  '/images/logos/brands/brand-9.svg',
-  '/images/logos/brands/brand-10.svg',
-  '/images/logos/brands/brand-11.svg',
-  '/images/logos/brands/brand-12.svg',
-  '/images/logos/brands/brand-13.svg',
-  '/images/logos/brands/brand-14.svg',
-  '/images/logos/brands/brand-15.svg'
-];
-
 const APP_PROMO: HomeContent['appPromo'] = {
   title: 'We are just one tap away',
   description:
@@ -285,7 +261,7 @@ const toHomeContent = (catalog: ServiceCatalog): HomeContent => {
     testimonials: TESTIMONIALS,
     benefits: BENEFITS,
     process: PROCESS_STEPS,
-    brandLogos: brandLogos.length ? brandLogos : FALLBACK_BRAND_LOGOS,
+    brandLogos,
     appPromo: APP_PROMO
   };
 };

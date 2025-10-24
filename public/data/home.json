@@ -4,13 +4,7 @@
     "subheadline": "Experience the best car service in Kolkata",
     "description": "Look no further! Get a free personalized quote for your car and enjoy genuine spares, transparent pricing, and doorstep pick-up.",
     "ctaText": "Get a Quote",
-    "brands": [
-      { "name": "Audi", "logo": "/images/logos/brands/brand-1.svg" },
-      { "name": "BMW", "logo": "/images/logos/brands/brand-2.svg" },
-      { "name": "Honda", "logo": "/images/logos/brands/brand-3.svg" },
-      { "name": "Hyundai", "logo": "/images/logos/brands/brand-4.svg" },
-      { "name": "Maruti Suzuki", "logo": "/images/logos/brands/brand-5.svg" }
-    ]
+    "brands": []
   },
   "usp": [
     {
@@ -164,23 +158,7 @@
       "description": "Convenient digital payments via UPI, cards, net banking, and wallets."
     }
   ],
-  "brandLogos": [
-    "/images/logos/brands/brand-1.svg",
-    "/images/logos/brands/brand-2.svg",
-    "/images/logos/brands/brand-3.svg",
-    "/images/logos/brands/brand-4.svg",
-    "/images/logos/brands/brand-5.svg",
-    "/images/logos/brands/brand-6.svg",
-    "/images/logos/brands/brand-7.svg",
-    "/images/logos/brands/brand-8.svg",
-    "/images/logos/brands/brand-9.svg",
-    "/images/logos/brands/brand-10.svg",
-    "/images/logos/brands/brand-11.svg",
-    "/images/logos/brands/brand-12.svg",
-    "/images/logos/brands/brand-13.svg",
-    "/images/logos/brands/brand-14.svg",
-    "/images/logos/brands/brand-15.svg"
-  ],
+  "brandLogos": [],
   "appPromo": {
     "title": "We are just one tap away",
     "description": "This app is available for your smartphone. Track jobs, approve estimates, and chat with our support team.",

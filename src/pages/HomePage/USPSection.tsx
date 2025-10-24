@@ -8,7 +8,7 @@ const USPSection = ({ items }: USPSectionProps) => {
   return (
     <section className="relative -mt-20 bg-transparent pb-20">
       <div className="container-cs">
-        <div className="rounded-[28px] bg-white/95 p-6 shadow-[0_30px_90px_rgba(25,118,210,0.18)] backdrop-blur-sm ring-1 ring-sky-50 md:p-8">
+        <div className="rounded-[28px] p-6 md:p-8">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {items.map((item) => (
               <div

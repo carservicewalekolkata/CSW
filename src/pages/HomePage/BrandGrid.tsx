@@ -3,6 +3,10 @@ interface BrandGridProps {
 }
 
 const BrandGrid = ({ logos }: BrandGridProps) => {
+  if (logos.length === 0) {
+    return null;
+  }
+
   return (
     <section className="bg-white py-20">
       <div className="container-cs space-y-10">
@@ -15,7 +19,7 @@ const BrandGrid = ({ logos }: BrandGridProps) => {
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
           {logos.map((logo, index) => (
             <div
-              key={logo}
+              key={`${logo}-${index}`}
               className="flex min-h-[100px] items-center justify-center rounded-2xl border border-slate-200 bg-white p-4 shadow-card transition hover:-translate-y-1 hover:shadow-deep"
             >
               <img src={logo} alt={`Brand ${index + 1}`} className="max-h-16" loading="lazy" />
