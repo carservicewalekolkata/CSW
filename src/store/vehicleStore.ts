@@ -109,6 +109,17 @@ const normalizeFuelTypes = (fuelTypes: Model['fuel_type']): string[] => {
   return Array.from(unique);
 };
 
+const normalizeServiceFuelType = (value: string | null | undefined): string | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return toTitleCase(trimmed);
+};
+
 const normalizeModelServices = (services: Model['services']): ModelService[] => {
   if (!Array.isArray(services)) {
     return [];
@@ -129,6 +140,7 @@ const normalizeModelServices = (services: Model['services']): ModelService[] => 
 
       return {
         services_id: serviceId,
+        fuel_type: normalizeServiceFuelType(service.fuel_type),
         discount: Number.isFinite(service.discount) ? Number(service.discount) : 0,
         original_price: Number.isFinite(service.original_price) ? Number(service.original_price) : 0,
         discount_price: Number.isFinite(service.discount_price) ? Number(service.discount_price) : 0

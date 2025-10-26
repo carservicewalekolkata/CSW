@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { serviceFaq } from '@/data/services';
 import { useServiceCatalog } from '@/hooks/useServiceCatalog';
@@ -12,6 +12,7 @@ import { ServicesHero } from './ServicesHero';
 import { VehicleNotFoundNotice } from './VehicleNotFoundNotice';
 import { useServicesPageState } from '@/hooks/useServicesPageState';
 import type { VehicleRouteState } from '@/types/servicePageUtilTypes';
+import { buildVehiclePath } from '@/utils/vehicleSlug';
 
 const defaultHeroImage = '/images/hero/service-image.jpg';
 
@@ -20,6 +21,7 @@ const ServicesPage = () => {
   const { data: catalog, isLoading, isError, error } = useServiceCatalog();
   const { vehicleSlug } = useParams<{ vehicleSlug?: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const routeState = (location.state as VehicleRouteState | undefined) ?? undefined;
   const { modelsByBrand, fetchVehicleCatalog, hasLoadedCatalog, isLoadingCatalog } = useVehicleStore((state) => ({
     modelsByBrand: state.modelsByBrand,
@@ -43,7 +45,9 @@ const ServicesPage = () => {
     showLoadingState,
     vehicleNotFound,
     displayServices,
-    emptyState
+    emptyState,
+    vehicleSelection,
+    fuelOptions
   } = useServicesPageState({
     catalog,
     isCatalogLoading: isLoading,
@@ -55,6 +59,39 @@ const ServicesPage = () => {
     isLoadingVehicleCatalog: isLoadingCatalog,
     fetchVehicleCatalog
   });
+
+  const handleFuelFilterChange = (nextFuel: string | null) => {
+    if (!vehicleSelection) {
+      return;
+    }
+    if (nextFuel && !fuelOptions.includes(nextFuel)) {
+      return;
+    }
+    if ((vehicleSelection.fuelType ?? null) === (nextFuel ?? null)) {
+      return;
+    }
+
+    const targetPath = buildVehiclePath(vehicleSelection.model.brandSlug, vehicleSelection.model.slug, nextFuel);
+    const nextState: VehicleRouteState = {
+      ...routeState,
+      selectedBrandSlug: vehicleSelection.model.brandSlug,
+      selectedBrandName: vehicleSelection.model.brandName,
+      selectedModelSlug: vehicleSelection.model.slug,
+      selectedModelName: vehicleSelection.model.name,
+      selectedFuelType: nextFuel ?? undefined
+    };
+
+    navigate(targetPath, { replace: true, state: nextState });
+  };
+
+  const fuelFilter =
+    vehicleSelection && fuelOptions.length > 0
+      ? {
+          options: fuelOptions,
+          selected: vehicleSelection.fuelType,
+          onChange: handleFuelFilterChange
+        }
+      : null;
 
   return (
     <>
@@ -115,6 +152,7 @@ const ServicesPage = () => {
         description={packagesDescription}
         defaultHeroImage={defaultHeroImage}
         emptyState={emptyState}
+        fuelFilter={fuelFilter}
       />
 
       <section className="bg-white py-20">

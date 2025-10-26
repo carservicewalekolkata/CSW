@@ -46,6 +46,7 @@ export interface Brand {
 
 export interface ModelService {
   services_id: string;
+  fuel_type?: string | null;
   discount: number;
   original_price: number;
   discount_price: number;

@@ -99,11 +99,7 @@ export const useHeroFormState = (data: HomeContent['hero']) => {
     const vehiclePayload = getVehiclePayload();
     if (!vehiclePayload) return;
 
-    const targetPath = buildVehiclePath(
-      selection.selectedFuelType,
-      selection.selectedBrand.slug,
-      selection.selectedModel.slug
-    );
+    const targetPath = buildVehiclePath(selection.selectedBrand.slug, selection.selectedModel.slug, selection.selectedFuelType);
 
     const navigationState = createNavigationState(selection, hasActiveSession ? sessionPhone ?? '' : trimmedPhone);
 

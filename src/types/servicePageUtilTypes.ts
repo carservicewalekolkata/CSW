@@ -17,5 +17,5 @@ export type VehicleRouteState = {
 
 export type VehicleSelection = {
   model: VehicleModel;
-  fuelType: string;
+  fuelType: string | null;
 };

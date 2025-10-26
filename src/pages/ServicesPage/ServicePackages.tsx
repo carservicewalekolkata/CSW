@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ServiceWithMetadata } from '@/hooks/useServiceCatalog';
 
 const renderPrice = (discountPrice?: number, originalPrice?: number) => {
@@ -53,12 +53,19 @@ const renderFeaturePreview = (features: string[], onReadMore?: () => void) => {
   );
 };
 
+interface FuelFilterConfig {
+  options: string[];
+  selected: string | null;
+  onChange: (value: string | null) => void;
+}
+
 interface ServicePackagesProps {
   services: ServiceWithMetadata[];
   title: string;
   description: string;
   defaultHeroImage: string;
   emptyState: { heading: string; description: string } | null;
+  fuelFilter?: FuelFilterConfig | null;
 }
 
 export const ServicePackages = ({
@@ -66,9 +73,37 @@ export const ServicePackages = ({
   title,
   description,
   defaultHeroImage,
-  emptyState
+  emptyState,
+  fuelFilter
 }: ServicePackagesProps) => {
   const [activeService, setActiveService] = useState<ServiceWithMetadata | null>(null);
+  const [isFuelMenuOpen, setIsFuelMenuOpen] = useState(false);
+  const fuelMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isFuelMenuOpen) {
+      return;
+    }
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!fuelMenuRef.current || fuelMenuRef.current.contains(event.target as Node)) {
+        return;
+      }
+      setIsFuelMenuOpen(false);
+    };
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => window.removeEventListener('mousedown', handleClickOutside);
+  }, [isFuelMenuOpen]);
+
+  useEffect(() => {
+    if (!fuelFilter) {
+      setIsFuelMenuOpen(false);
+    }
+  }, [fuelFilter]);
+
+  const handleFuelOptionSelect = (value: string | null) => {
+    fuelFilter?.onChange(value);
+    setIsFuelMenuOpen(false);
+  };
 
   const openModal = (service: ServiceWithMetadata) => setActiveService(service);
   const closeModal = () => setActiveService(null);
@@ -77,9 +112,72 @@ export const ServicePackages = ({
     <>
       <section className="bg-slate-50 py-20">
         <div className="container-cs space-y-12">
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold text-indigo-950">{title}</h2>
-            <p className="mt-3 text-slate-600">{description}</p>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-bold text-indigo-950">{title}</h2>
+              <p className="mt-3 text-slate-600">{description}</p>
+            </div>
+            {fuelFilter && fuelFilter.options.length > 0 ? (
+              <div className="relative flex flex-col gap-2 text-sm text-indigo-950" ref={fuelMenuRef}>
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Fuel type</span>
+                <button
+                  type="button"
+                  className="group inline-flex min-w-[220px] items-center justify-between rounded-2xl border border-slate-200 bg-gradient-to-br from-white/90 to-slate-50/60 px-4 py-3 text-sm font-semibold text-indigo-950 shadow-[0_1px_8px_rgba(15,23,42,0.08)] transition hover:border-brand-400 focus:border-brand-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-200"
+                  onClick={() => setIsFuelMenuOpen((prev) => !prev)}
+                  aria-haspopup="listbox"
+                  aria-expanded={isFuelMenuOpen}
+                >
+                  <span>{fuelFilter.selected ?? 'All fuels'}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isFuelMenuOpen ? 'rotate-180 text-brand-500' : ''}`}
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.08 1.04l-4.24 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                <div
+                  className={`absolute left-0 top-full z-20 mt-2 w-full origin-top rounded-2xl border border-slate-200 bg-white/95 backdrop-blur transition-all duration-200 ${
+                    isFuelMenuOpen
+                      ? 'pointer-events-auto opacity-100 shadow-[0_8px_30px_rgba(15,23,42,0.12)] translate-y-2'
+                      : 'pointer-events-none opacity-0 translate-y-0'
+                  }`}
+                  role="listbox"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleFuelOptionSelect(null)}
+                    className={`block w-full px-4 py-2 text-left text-sm font-medium transition hover:bg-brand-50 ${
+                      !fuelFilter.selected ? 'text-brand-600' : 'text-slate-700'
+                    }`}
+                  >
+                    All fuels
+                  </button>
+                  {fuelFilter.options.map((fuel) => {
+                    const isActive = fuelFilter.selected === fuel;
+                    return (
+                      <button
+                        type="button"
+                        key={fuel}
+                        onClick={() => handleFuelOptionSelect(fuel)}
+                        className={`block w-full px-4 py-2 text-left text-sm font-medium transition hover:bg-brand-50 ${
+                          isActive ? 'text-brand-600' : 'text-slate-700'
+                        }`}
+                        role="option"
+                        aria-selected={isActive}
+                      >
+                        {fuel}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {services.length > 0 ? (

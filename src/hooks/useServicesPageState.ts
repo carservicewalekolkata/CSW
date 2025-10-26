@@ -7,6 +7,22 @@ import { matchVehicleSlug } from '@/utils/vehicleSlug';
 import { normalizeCategoryKey } from '@/utils/normalizeCategoryKey';
 import type { CategoryFilter, VehicleRouteState, VehicleSelection } from '@/types/servicePageUtilTypes';
 
+const normalizeFuelLabel = (value: string | null | undefined) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return trimmed
+    .toLowerCase()
+    .split(/\s+/)
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : ''))
+    .join(' ')
+    .trim();
+};
+
 export interface UseServicesPageStateParams {
   catalog: ServiceCatalog | undefined;
   isCatalogLoading: boolean;
@@ -36,6 +52,7 @@ export interface ServicesPageState {
   displayServices: ServiceWithMetadata[];
   emptyState: { heading: string; description: string } | null;
   vehicleSelection: VehicleSelection | null;
+  fuelOptions: string[];
 }
 
 export const useServicesPageState = ({
@@ -86,10 +103,9 @@ export const useServicesPageState = ({
       return null;
     }
 
-    const fuelType = routeState.selectedFuelType ?? model.fuelTypes[0] ?? '';
-    if (!fuelType) {
-      return null;
-    }
+    const selectedFuel = routeState.selectedFuelType?.trim();
+    const fallbackFuel = model.fuelTypes[0] ?? null;
+    const fuelType = selectedFuel || fallbackFuel || null;
 
     return {
       model,
@@ -128,7 +144,25 @@ export const useServicesPageState = ({
       return null;
     }
 
+    const activeFuel =
+      typeof vehicleSelection.fuelType === 'string' && vehicleSelection.fuelType.trim().length > 0
+        ? vehicleSelection.fuelType.trim().toLowerCase()
+        : null;
+
     const scoped = vehicleSelection.model.services
+      .filter((serviceLink) => {
+        if (!activeFuel) {
+          return true;
+        }
+        const linkFuel =
+          typeof serviceLink.fuel_type === 'string' && serviceLink.fuel_type.trim().length > 0
+            ? serviceLink.fuel_type.trim().toLowerCase()
+            : null;
+        if (!linkFuel) {
+          return true;
+        }
+        return linkFuel === activeFuel;
+      })
       .map((serviceLink) => {
         const serviceData = servicesById.get(serviceLink.services_id);
         if (!serviceData) {
@@ -216,6 +250,29 @@ export const useServicesPageState = ({
   const showCategoryFilters = !vehicleNotFound;
   const showLoadingState = isCatalogLoading || isVehicleDataLoading;
 
+  const fuelOptions = useMemo(() => {
+    if (!vehicleSelection) {
+      return [];
+    }
+    const modelFuelSet = new Set(
+      (vehicleSelection.model.fuelTypes ?? [])
+        .map((fuel) => normalizeFuelLabel(fuel))
+        .filter((fuel): fuel is string => Boolean(fuel))
+    );
+
+    const serviceFuelSet = new Set(
+      (vehicleScopedServices ?? [])
+        .map((service) => normalizeFuelLabel((service as { fuel_type?: string | null }).fuel_type))
+        .filter((fuel): fuel is string => Boolean(fuel))
+    );
+
+    if (serviceFuelSet.size > 0) {
+      return Array.from(modelFuelSet).filter((fuel) => serviceFuelSet.has(fuel));
+    }
+
+    return Array.from(modelFuelSet);
+  }, [vehicleSelection, vehicleScopedServices]);
+
   const cityName = currentCityName?.trim() ? currentCityName.trim() : 'your city';
   const vehicleModelLabel = vehicleSelection
     ? `${vehicleSelection.model.brandName} ${vehicleSelection.model.name}`.replace(/\s+/g, ' ').trim()
@@ -223,18 +280,19 @@ export const useServicesPageState = ({
   const vehicleFullLabel = vehicleModelLabel
     ? [vehicleSelection?.fuelType, vehicleModelLabel].filter(Boolean).join(' ')
     : null;
+  const vehicleTitleLabel = vehicleFullLabel ?? vehicleModelLabel;
 
-  const metaTitle = vehicleModelLabel
-    ? `Best ${vehicleModelLabel} Service in ${cityName} | Car Service Wale`
+  const metaTitle = vehicleTitleLabel
+    ? `Best ${vehicleTitleLabel} services in ${cityName} | Car Service Wale`
     : `Car Service Wale | Car Services in ${cityName}`;
 
-  const heroTitle = vehicleModelLabel ? `Best ${vehicleModelLabel} Service in ${cityName}` : `Car services in ${cityName}`;
-  const heroDescription = vehicleModelLabel
-    ? `Keep your ${vehicleModelLabel} running like new with certified technicians in ${cityName}. Doorstep pick-up, genuine parts, and transparent pricing.`
+  const heroTitle = vehicleTitleLabel ? `Best ${vehicleTitleLabel} services in ${cityName}` : `Car services in ${cityName}`;
+  const heroDescription = vehicleTitleLabel
+    ? `Keep your ${vehicleTitleLabel} running like new with certified technicians in ${cityName}. Doorstep pick-up, genuine parts, and transparent pricing.`
     : `Multiple options to choose, service anytime anywhere in ${cityName}. Our advisors craft the right combination of periodic maintenance, repairs, and detailing for every vehicle.`;
 
-  const metaDescription = vehicleModelLabel
-    ? `Doorstep ${vehicleModelLabel} servicing in ${cityName}. Book periodic maintenance, repairs, and detailing with Car Service Wale experts.`
+  const metaDescription = vehicleTitleLabel
+    ? `Doorstep ${vehicleTitleLabel} servicing in ${cityName}. Book periodic maintenance, repairs, and detailing with Car Service Wale experts.`
     : `Browse doorstep car servicing, maintenance packages, emergency support, and smart add-ons tailored for vehicles across ${cityName}.`;
 
   const packagesTitle = vehicleModelLabel
@@ -275,6 +333,7 @@ export const useServicesPageState = ({
     vehicleNotFound,
     displayServices,
     emptyState,
-    vehicleSelection
+    vehicleSelection,
+    fuelOptions
   };
 };
