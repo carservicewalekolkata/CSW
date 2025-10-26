@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ServiceWithMetadata } from '@/hooks/useServiceCatalog';
+import { useAppStore, type CartServiceItem } from '@/store/appStore';
 
 const renderPrice = (discountPrice?: number, originalPrice?: number) => {
   if (!discountPrice && !originalPrice) {
@@ -79,6 +80,12 @@ export const ServicePackages = ({
   const [activeService, setActiveService] = useState<ServiceWithMetadata | null>(null);
   const [isFuelMenuOpen, setIsFuelMenuOpen] = useState(false);
   const fuelMenuRef = useRef<HTMLDivElement | null>(null);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [pendingService, setPendingService] = useState<ServiceWithMetadata | null>(null);
+
+  const { customerPhone, addServiceToCart, setCustomerPhone } = useAppStore();
 
   useEffect(() => {
     if (!isFuelMenuOpen) {
@@ -107,6 +114,45 @@ export const ServicePackages = ({
 
   const openModal = (service: ServiceWithMetadata) => setActiveService(service);
   const closeModal = () => setActiveService(null);
+
+  const mapServiceToCartItem = (service: ServiceWithMetadata): CartServiceItem => ({
+    id: `${service.id}-${Date.now()}`,
+    serviceId: service.id,
+    name: service.name,
+    category: service.category_name ?? 'Service',
+    price:
+      service.pricing?.discount_price ??
+      service.pricing?.original_price ??
+      0,
+    thumbnail: service.thumbnailUrl ?? service.serviceImages[0] ?? defaultHeroImage,
+    description: service.description ?? undefined,
+    timeTaken: service.time_taken ?? undefined,
+  });
+
+  const handleAddToCart = (service: ServiceWithMetadata) => {
+    if (!customerPhone) {
+      setPendingService(service);
+      setPhoneInput('');
+      setPhoneError(null);
+      setIsPhoneModalOpen(true);
+      return;
+    }
+    addServiceToCart(mapServiceToCartItem(service));
+  };
+
+  const handlePhoneSubmit = () => {
+    const trimmed = phoneInput.trim();
+    if (!/^\d{10}$/.test(trimmed)) {
+      setPhoneError('Enter a valid 10-digit mobile number.');
+      return;
+    }
+    setCustomerPhone(trimmed);
+    if (pendingService) {
+      addServiceToCart(mapServiceToCartItem(pendingService));
+      setPendingService(null);
+    }
+    setIsPhoneModalOpen(false);
+  };
 
   return (
     <>
@@ -225,8 +271,9 @@ export const ServicePackages = ({
                         <button
                           type="button"
                           className="btn-primary w-full justify-center bg-brand-500 text-white hover:bg-brand-600"
+                          onClick={() => handleAddToCart(service)}
                         >
-                          Book this service
+                          Add to cart
                         </button>
                         <button
                           type="button"
@@ -306,9 +353,60 @@ export const ServicePackages = ({
                 <button
                   type="button"
                   className="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2"
-                  onClick={closeModal}
+                  onClick={() => {
+                    if (activeService) {
+                      handleAddToCart(activeService);
+                    }
+                    closeModal();
+                  }}
                 >
-                  Book this service
+                  Add to cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {isPhoneModalOpen ? (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-[2px]"
+            onClick={() => setIsPhoneModalOpen(false)}
+            aria-label="Dismiss phone capture"
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
+            <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-deep">
+              <h3 className="text-xl font-semibold text-indigo-950">Enter your phone number</h3>
+              <p className="mt-2 text-sm text-slate-600">
+                We use your number to create a session and share booking updates.
+              </p>
+              <input
+                type="tel"
+                value={phoneInput}
+                onChange={(event) => {
+                  setPhoneInput(event.target.value)
+                  setPhoneError(null)
+                }}
+                placeholder="10-digit mobile number"
+                className="mt-4 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-brand-500 focus:outline-none"
+              />
+              {phoneError ? <p className="mt-2 text-xs text-rose-600">{phoneError}</p> : null}
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsPhoneModalOpen(false)}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePhoneSubmit}
+                  className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Continue
                 </button>
               </div>
             </div>
