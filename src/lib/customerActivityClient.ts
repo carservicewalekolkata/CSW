@@ -11,13 +11,20 @@ export const logCustomerActivity = (payload: CustomerActivityRequest) =>
 
 export type LatestCartStatus = 'on-cart' | 'booked' | 'solved' | 'cancelled' | null;
 
+type CustomersApiResponse = {
+  sessions: Array<{
+    phone: string;
+    entries: Array<{ createdAt: string; cartStatus: 'on-cart' | 'booked' | 'solved' | 'cancelled' | string }>;
+  }>;
+};
+
 export const fetchLatestCartStatus = async (phone: string): Promise<LatestCartStatus> => {
-  const data = await apiRequest<{ sessions: Array<{ phone: string; entries: Array<{ createdAt: string; cartStatus: string }> }> }>({
+  const data = await apiRequest<CustomersApiResponse>({
     endpoint: APIEndpoints.activity.customers,
     method: 'GET'
   });
 
-  const sessions = Array.isArray((data as any).sessions) ? (data as any).sessions : [];
+  const sessions = Array.isArray(data.sessions) ? data.sessions : [];
   const mine = sessions.find((s) => s.phone === phone);
   if (!mine || !Array.isArray(mine.entries) || mine.entries.length === 0) {
     return null;

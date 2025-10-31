@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { useEffect, useRef } from 'react';
+// Note: no side-effects needed here
 import { serviceFaq } from '@/data/services';
 import { useServiceCatalog } from '@/hooks/useServiceCatalog';
 import { useAppStore } from '@/store/appStore';

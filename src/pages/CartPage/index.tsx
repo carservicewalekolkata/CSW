@@ -194,13 +194,14 @@ const CartPage = () => {
         const status = await fetchLatestCartStatus(customerPhone);
         if (!status) return;
         // Update top order status in the persisted store
-        useAppStore.setState((state) => {
-          if (state.orders.length === 0) return state;
-          const updated = [...state.orders];
-          updated[0] = { ...updated[0], status } as typeof state.orders[number];
-          return { orders: updated } as Partial<typeof state> as any;
-        });
-      } catch {}
+        useAppStore.setState((state) =>
+          state.orders.length === 0
+            ? state
+            : { orders: [{ ...state.orders[0], status }, ...state.orders.slice(1)] },
+        );
+      } catch (_err) {
+        // ignore transient network errors while polling
+      }
     };
     // initial fetch and then interval
     void poll();
