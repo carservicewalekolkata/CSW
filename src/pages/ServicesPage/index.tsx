@@ -1,10 +1,13 @@
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
+import { useEffect, useRef } from 'react';
 import { serviceFaq } from '@/data/services';
 import { useServiceCatalog } from '@/hooks/useServiceCatalog';
 import { useAppStore } from '@/store/appStore';
 import { useVehicleStore } from '@/store/vehicleStore';
+// import { useHeroSession } from '@/hooks/heroFormHooks/useHeroSession';
+// import { logCustomerActivity } from '@/lib/customerActivityClient';
 
 import { CategoryFilters } from './CategoryFilters';
 import { ServicePackages } from './ServicePackages';
@@ -59,6 +62,26 @@ const ServicesPage = () => {
     isLoadingVehicleCatalog: isLoadingCatalog,
     fetchVehicleCatalog
   });
+
+  // Optional: track service page landing as a search event
+  // const { sessionToken } = useHeroSession();
+  // const visitLoggedRef = useRef(false);
+  // useEffect(() => {
+  //   if (visitLoggedRef.current) return;
+  //   if (!sessionToken || !vehicleSelection) return;
+  //   visitLoggedRef.current = true;
+  //   void logCustomerActivity({
+  //     sessionToken,
+  //     vehicle: {
+  //       brandSlug: vehicleSelection.model.brandSlug,
+  //       brandName: vehicleSelection.model.brandName,
+  //       modelSlug: vehicleSelection.model.slug,
+  //       modelName: vehicleSelection.model.name,
+  //       fuelType: vehicleSelection.fuelType ?? 'unknown'
+  //     },
+  //     searchSource: 'services'
+  //   }).catch(() => {});
+  // }, [sessionToken, vehicleSelection]);
 
   const handleFuelFilterChange = (nextFuel: string | null) => {
     if (!vehicleSelection) {

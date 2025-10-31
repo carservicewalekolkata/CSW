@@ -4,7 +4,7 @@ export type NavItem = {
 };
 
 export const primaryNav: NavItem[] = [
-  { label: 'Spares', to: '/' },
+  { label: 'Home', to: '/' },
   { label: 'Service', to: '/services' }
 ];
 

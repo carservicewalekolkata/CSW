@@ -29,7 +29,7 @@ export type CartOrder = {
   items: CartServiceItem[];
   total: number;
   createdAt: string;
-  status: 'hold' | 'solved' | 'cancelled';
+  status: 'on-cart' | 'booked' | 'solved' | 'cancelled';
 };
 
 interface AppState {
@@ -127,7 +127,7 @@ export const useAppStore = create<AppState>()(
             items,
             total,
             createdAt: new Date().toISOString(),
-            status: 'hold'
+            status: 'booked'
           };
           return {
             orders: [order, ...state.orders].slice(0, 10),

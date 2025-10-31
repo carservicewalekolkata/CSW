@@ -155,7 +155,8 @@ export const useHeroOtp = ({ getVehiclePayload, onSuccess, setSessionToken, setS
       const response = await logCustomerActivity({
         phone: pendingNavigation.state.phone,
         otpRequestId,
-        vehicle: vehiclePayload
+        vehicle: vehiclePayload,
+        searchSource: 'homepage'
       });
 
       setSessionToken(response.sessionToken);

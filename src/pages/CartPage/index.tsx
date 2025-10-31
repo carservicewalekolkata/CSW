@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { FiTrash2 } from 'react-icons/fi';
 
 import { useAppStore, type CartServiceItem } from '@/store/appStore';
+import { fetchLatestCartStatus } from '@/lib/customerActivityClient';
 
 const ADMIN_API_BASE_URL = import.meta.env.VITE_ADMIN_API_BASE_URL ?? 'http://localhost:3000';
 
@@ -129,7 +130,7 @@ const CartPage = () => {
         body: JSON.stringify({
           phone: customerPhone,
           vehicle: mapServiceToVehicle(primary),
-          cartStatus: 'hold',
+          cartStatus: 'on-cart',
           cartItems: cartItemsDetailed.map((item) => ({
             id: item.id,
             name: item.name,
@@ -183,6 +184,31 @@ const CartPage = () => {
       </button>
     );
   };
+
+  // Sync booking status from admin periodically when an order exists
+  useEffect(() => {
+    let timer: number | null = null;
+    const poll = async () => {
+      try {
+        if (!customerPhone || orders.length === 0) return;
+        const status = await fetchLatestCartStatus(customerPhone);
+        if (!status) return;
+        // Update top order status in the persisted store
+        useAppStore.setState((state) => {
+          if (state.orders.length === 0) return state;
+          const updated = [...state.orders];
+          updated[0] = { ...updated[0], status } as typeof state.orders[number];
+          return { orders: updated } as Partial<typeof state> as any;
+        });
+      } catch {}
+    };
+    // initial fetch and then interval
+    void poll();
+    timer = window.setInterval(poll, 5000);
+    return () => {
+      if (timer) window.clearInterval(timer);
+    };
+  }, [customerPhone, orders.length]);
 
   return (
     <>

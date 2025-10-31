@@ -28,6 +28,8 @@ export type CustomerActivityRequest = {
   phone?: string
   otpRequestId?: string
   vehicle: CustomerActivityVehicle
+  servicePageVisitedAt?: string
+  searchSource?: string
 }
 
 export type CustomerActivityResponse = {
