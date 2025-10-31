@@ -16,10 +16,10 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Car Service Wale | Home</title>
+        <title>Best Car Service And Repair in Kolkata | Expert Car Service Centre Near Me | CSW</title>
         <meta
           name="description"
-          content="Discover premium on-demand car and bike services, genuine spare parts, and expert care with Car Service Wale."
+          content="Best car service and repair in Kolkata. Expert mechanics, genuine spares, doorstep pickup, and transparent pricing from Car Service Wale (CSW)."
         />
       </Helmet>
       {isLoading && (
