@@ -1,16 +1,35 @@
 import { Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import LocationModal from '@/components/LocationModal';
 import ChatWidget from '@/components/ChatWidget';
 import MobileDock from '@/components/MobileDock';
+import Skeleton from '@/components/Skeleton';
+import HomePageSkeleton from '@/pages/HomePage/skeletons/HomePageSkeleton';
 
-const Loader = () => (
-  <div className="flex w-full justify-center py-16">
-    <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-  </div>
-);
+const Loader = () => {
+  const { pathname } = useLocation();
+  if (pathname === '/') {
+    return <HomePageSkeleton />;
+  }
+  return (
+    <div className="container-cs py-16 space-y-6">
+      <Skeleton className="h-7 w-64" />
+      <div className="grid gap-6 md:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="rounded-xl border border-slate-200 bg-white p-6 shadow-card">
+            <Skeleton className="h-24 w-full rounded-lg" />
+            <div className="space-y-2 pt-4">
+              <Skeleton className="h-4 w-3/5" />
+              <Skeleton className="h-3 w-5/6" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const AppLayout = () => {
   return (

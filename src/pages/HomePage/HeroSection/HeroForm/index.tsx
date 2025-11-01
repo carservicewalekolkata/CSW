@@ -1,5 +1,5 @@
 import gsap from 'gsap';
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { HomeContent } from '@/hooks/useHomeContent';
 import { useHeroFormState } from '@/hooks/heroFormHooks/useHeroFormState';
@@ -49,12 +49,19 @@ const HeroForm = ({ data }: { data: HomeContent['hero'] }) => {
     };
   }, []);
 
+  // Lift the form card slightly when the selector opens, with a smooth animation.
+  useEffect(() => {
+    if (!cardRef.current) return;
+    const y = sheet.isOpen ? -20 : 0;
+    gsap.to(cardRef.current, { y, duration: 0.35, ease: 'power2.out' });
+  }, [sheet.isOpen]);
+
   return (
     <>
       <div className="flex flex-col items-start justify-center lg:justify-end">
         <div
           ref={cardRef}
-          className={`relative flex flex-col w-full max-w-[420px] ${sheet.isOpen ? 'h-[520px]' : 'h-fit'} rounded-md bg-white p-8 text-[#2a1454] shadow-[0_50px_120px_rgba(26,107,199,0.18)] ring-1 ring-white/80`}
+          className={`relative flex flex-col w-full max-w-[420px] ${sheet.isOpen ? 'h-[520px]' : 'h-fit'} rounded-md bg-white p-8 text-[#2a1454] shadow-[0_50px_120px_rgba(26,107,199,0.18)] ring-1 ring-white/80 will-change-transform`}
         >
           <div>
             <h2 className="text-3xl font-light leading-snug text-[#2a1454]">

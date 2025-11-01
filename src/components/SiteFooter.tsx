@@ -90,7 +90,8 @@ const SiteFooter = () => {
       </div>
 
       <div className="border-t border-neutral-700">
-        <div className="container-cs flex flex-col gap-6 py-3 text-base text-slate-300 md:flex-row md:items-center md:justify-between">
+        {/* Extra bottom padding on mobile so content isn't hidden behind the fixed MobileDock */}
+        <div className="container-cs flex flex-col gap-6 py-3 pb-24 text-base text-slate-300 md:flex-row md:items-center md:justify-between md:pb-3">
           <p className='text-slate-300'>© {new Date().getFullYear()} Car Service Wale. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <span className="text-slate-300">Find us on:</span>

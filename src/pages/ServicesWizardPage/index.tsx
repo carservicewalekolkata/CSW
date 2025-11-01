@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, startTransition } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
@@ -34,7 +34,7 @@ const ServicesWizardPage = () => {
       selectedModelName: selectedModel.name,
       selectedFuelType
     };
-    navigate(path, { state, replace: true });
+    startTransition(() => navigate(path, { state, replace: true }));
   }, [selection.selectedBrand, selection.selectedModel, selection.selectedFuelType]);
 
   const active = selection.sheet.activeStep || 'brand';

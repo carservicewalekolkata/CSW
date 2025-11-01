@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, startTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { HomeContent } from '@/hooks/useHomeContent';
@@ -47,7 +47,7 @@ export const useHeroFormState = (data: HomeContent['hero']) => {
   const navigateToTarget = (path: string, state: VehicleNavigationState) => {
     selection.sheet.onClose();
     setMessage('');
-    navigate(path, { state });
+    startTransition(() => navigate(path, { state }));
     setPhone('');
     selection.resetVehicleSelection();
   };
@@ -58,7 +58,7 @@ export const useHeroFormState = (data: HomeContent['hero']) => {
   const isPhoneValid = PHONE_NUMBER_PATTERN.test(trimmedPhone);
   const isSubmitDisabled =
     !selection.hasCompletedSelection || isProcessing || (shouldShowPhoneField && !isPhoneValid);
-  const submitButtonLabel = isProcessing ? 'Saving...' : 'Get A Quote';
+  const submitButtonLabel = isProcessing ? 'Saving...' : 'Get Estimation';
 
   const handleClearSelection = () => {
     selection.resetVehicleSelection();

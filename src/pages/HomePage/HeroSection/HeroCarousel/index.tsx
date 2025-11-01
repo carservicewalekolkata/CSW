@@ -64,7 +64,7 @@ const HeroCarousel = ({ data }: { data: HomeContent['hero']; }) => {
 
     return (
         <div className="relative lg:pl-20">
-            <div className="relative mx-auto flex h-[340px] w-full max-w-[500px] items-center justify-start">
+            <div className="relative mx-auto flex h-[260px] sm:h-[320px] lg:h-[360px] w-full max-w-[520px] items-center justify-start">
                 {heroSlides.map((item, i) => (
                     <div
                         key={i}
@@ -81,11 +81,11 @@ const HeroCarousel = ({ data }: { data: HomeContent['hero']; }) => {
                 ))}
             </div>
 
-            <div ref={textRef} className="mt-8 flex flex-col gap-2 text-[#30155B]">
+            <div ref={textRef} className="mt-4 sm:mt-6 flex flex-col gap-2 text-[#30155B]">
                 <span data-hero-text className="text-lg font-semibold uppercase tracking-[0.45em] text-[#1e51a3]">
                     24/7
                 </span>
-                <h1 data-hero-text className="text-xl font-semibold leading-snug text-[#2d1557] sm:text-xl">
+                <h1 data-hero-text className="text-xl font-semibold leading-snug text-[#2d1557]">
                     On spot Car 
                     <span className="font-extrabold text-[#2d1557]"> Repair Service</span>
                 </h1>

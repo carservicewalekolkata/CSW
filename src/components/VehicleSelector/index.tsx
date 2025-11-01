@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, startTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useHeroSelectionSheet } from '@/hooks/heroFormHooks/useHeroSelectionSheet';
@@ -50,7 +50,7 @@ const VehicleSelector = () => {
       selectedFuelType: selection.selectedFuelType ?? undefined
     };
 
-    navigate(targetPath, { state, replace: false });
+    startTransition(() => navigate(targetPath, { state, replace: false }));
   };
 
   // Optional UX: if user just completed fuel selection inside the sheet, prompt CTA once

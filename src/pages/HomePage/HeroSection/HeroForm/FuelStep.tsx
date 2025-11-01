@@ -32,7 +32,7 @@ const FuelStep = ({ selectedBrand, selectedModel, availableFuelTypes, selectedFu
       <p className="text-xs font-semibold uppercase tracking-wide text-[#6c74a0]">
         {selectedBrand.name} · {selectedModel.name}
       </p>
-      <div className="grid max-h-[50vh] grid-cols-3 gap-4 overflow-y-auto pr-1 sm:grid-cols-4 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4">
         {availableFuelTypes.map((fuel) => {
           const isSelected = selectedFuelType === fuel;
           const iconSrc = FUEL_ICON_MAP[fuel.toLowerCase()] ?? null;
@@ -42,7 +42,7 @@ const FuelStep = ({ selectedBrand, selectedModel, availableFuelTypes, selectedFu
               key={fuel}
               type="button"
               onClick={() => onSelect(fuel)}
-              className={`flex flex-col items-center gap-2 rounded-2xl border border-transparent bg-white p-4 text-center text-[11px] font-medium text-[#2a1454] shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${
+              className={`flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-2xl border border-transparent bg-white p-4 text-center text-[10px] font-medium text-[#2a1454] shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${
                 isSelected ? 'border-[#0285CE] shadow-[0_0_0_3px_rgba(2,133,206,0.12)]' : ''
               }`}
             >
@@ -53,7 +53,7 @@ const FuelStep = ({ selectedBrand, selectedModel, availableFuelTypes, selectedFu
                   {fuel.slice(0, 2).toUpperCase()}
                 </span>
               )}
-              <span className="leading-tight text-[#5b5f7d]">{fuel}</span>
+              <span className="leading-snug text-[#5b5f7d]">{fuel}</span>
             </button>
           );
         })}

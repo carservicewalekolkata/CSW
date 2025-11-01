@@ -6,7 +6,7 @@ interface USPSectionProps {
 
 const USPSection = ({ items }: USPSectionProps) => {
   return (
-    <section className="relative -mt-20 bg-transparent pb-20">
+    <section className="relative sm:-mt-20 bg-transparent pb-20">
       <div className="container-cs">
         <div className="rounded-[28px] p-6 md:p-8">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">

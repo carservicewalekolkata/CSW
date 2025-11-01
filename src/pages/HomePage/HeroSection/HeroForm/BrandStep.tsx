@@ -45,7 +45,7 @@ const BrandStep = ({
   }
 
   return (
-    <div className="grid max-h-[60vh] grid-cols-3 gap-4 overflow-y-auto pr-1 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-4 pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4">
       {brands.map((brand) => {
         const isSelected = selectedBrand?.slug === brand.slug;
 
@@ -54,18 +54,18 @@ const BrandStep = ({
             key={brand.slug}
             type="button"
             onClick={() => onSelect(brand)}
-            className={`flex flex-col items-center gap-2 rounded-2xl border border-transparent bg-white p-4 text-center text-[11px] font-semibold uppercase tracking-wide text-[#2a1454] shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${
+            className={`flex min-h-[130px] flex-col items-center justify-center gap-2 rounded-2xl border border-transparent bg-white p-4 text-center text-[10px] font-semibold text-[#2a1454] shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${
               isSelected ? 'border-[#0285CE] shadow-[0_0_0_3px_rgba(2,133,206,0.12)]' : ''
             }`}
           >
             {brand.iconUrl ? (
-              <img src={brand.iconUrl} alt={`${brand.name} logo`} loading="lazy" className="h-16 w-16 object-contain" />
+              <img src={brand.iconUrl} alt={`${brand.name} logo`} loading="lazy" className="h-16 w-28 md:h-20 md:w-28 object-contain" />
             ) : (
               <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#e4f4ff] text-base font-bold text-[#0285CE]">
                 {brand.name.slice(0, 2).toUpperCase()}
               </span>
             )}
-            <span className="leading-tight text-[#5b5f7d]">{brand.name}</span>
+            <span className="leading-snug text-[#5b5f7d]">{brand.name}</span>
           </button>
         );
       })}

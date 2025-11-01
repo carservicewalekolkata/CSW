@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { Navigate, createBrowserRouter } from 'react-router-dom';
+import RouteErrorBoundary from './components/RouteErrorBoundary';
 import AppLayout from './layouts/AppLayout';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -22,10 +23,11 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 export const router = createBrowserRouter([
   // Fullscreen Services selection (no AppLayout)
-  { path: '/services', element: <ServicesWizardPage /> },
+  { path: '/services', element: <ServicesWizardPage />, errorElement: <RouteErrorBoundary /> },
   {
     path: '/',
     element: <AppLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <HomePage /> },
       // Vehicle-specific services remain in AppLayout

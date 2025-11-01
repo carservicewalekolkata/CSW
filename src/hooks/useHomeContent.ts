@@ -281,9 +281,22 @@ const toHomeContent = (catalog: ServiceCatalog): HomeContent => {
   };
 };
 
+// Empty catalog used for placeholder/default content
+export const EMPTY_CATALOG: ServiceCatalog = {
+  services: [],
+  categories: [],
+  brands: [],
+  pricingByServiceId: {}
+};
+
+// Public helper to access the default static content
+export const getDefaultHomeContent = (): HomeContent => toHomeContent(EMPTY_CATALOG);
+
 export const useHomeContent = () =>
   useQuery<ServiceCatalog, Error, HomeContent>({
     queryKey: serviceCatalogQueryKey,
     queryFn: fetchServiceCatalog,
-    select: toHomeContent
+    // We want a true loading state to show skeletons; no placeholder here.
+    select: toHomeContent,
+    staleTime: 1000 * 60 * 5
   });
