@@ -4,6 +4,7 @@ import AppLayout from './layouts/AppLayout';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const ServicesPage = lazy(() => import('./pages/ServicesPage'));
+const ServicesWizardPage = lazy(() => import('./pages/ServicesWizardPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const BookingsPage = lazy(() => import('./pages/BookingsPage'));
@@ -20,12 +21,14 @@ const WalletPage = lazy(() => import('./pages/WalletPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 export const router = createBrowserRouter([
+  // Fullscreen Services selection (no AppLayout)
+  { path: '/services', element: <ServicesWizardPage /> },
   {
     path: '/',
     element: <AppLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'services', element: <ServicesPage /> },
+      // Vehicle-specific services remain in AppLayout
       { path: 'services/:vehicleSlug', element: <ServicesPage /> },
       { path: 'about', element: <AboutPage /> },
       { path: 'contact', element: <ContactPage /> },

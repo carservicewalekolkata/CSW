@@ -32,7 +32,7 @@ const FuelStep = ({ selectedBrand, selectedModel, availableFuelTypes, selectedFu
       <p className="text-xs font-semibold uppercase tracking-wide text-[#6c74a0]">
         {selectedBrand.name} · {selectedModel.name}
       </p>
-      <div className="grid max-h-[280px] grid-cols-3 gap-4 overflow-y-auto pr-1 sm:grid-cols-4">
+      <div className="grid max-h-[50vh] grid-cols-3 gap-4 overflow-y-auto pr-1 sm:grid-cols-4 md:grid-cols-5">
         {availableFuelTypes.map((fuel) => {
           const isSelected = selectedFuelType === fuel;
           const iconSrc = FUEL_ICON_MAP[fuel.toLowerCase()] ?? null;

@@ -45,7 +45,7 @@ const BrandStep = ({
   }
 
   return (
-    <div className="grid max-h-[340px] grid-cols-3 gap-4 overflow-y-auto pr-1 sm:grid-cols-4">
+    <div className="grid max-h-[60vh] grid-cols-3 gap-4 overflow-y-auto pr-1 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
       {brands.map((brand) => {
         const isSelected = selectedBrand?.slug === brand.slug;
 
