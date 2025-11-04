@@ -60,8 +60,8 @@ const ContactPage = () => {
               </li>
               <li className="flex items-center gap-4">
                 <span className="text-2xl">📞</span>
-                <a href="tel:8904555007" className="text-indigo-950 hover:text-brand-600">
-                  8904555007
+                <a href="tel:9147322205" className="text-indigo-950 hover:text-brand-600">
+                  9147322205
                 </a>
               </li>
               <li className="flex items-center gap-4">
@@ -127,7 +127,7 @@ const ContactPage = () => {
                   type="tel"
                   name="phone"
                   className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none"
-                  placeholder="8904 555 007"
+                placeholder="9147 322 205"
                 />
               </label>
               <label className="text-sm font-medium text-indigo-950">

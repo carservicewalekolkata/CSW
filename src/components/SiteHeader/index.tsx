@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HiOutlineChevronDown, HiOutlineMenu } from 'react-icons/hi';
 import { PiMapPinLineBold } from 'react-icons/pi';
-import { BsCart2, BsPerson } from 'react-icons/bs';
+import { BsCart2 } from 'react-icons/bs';
 import { useAppStore } from '@/store/appStore';
 import DesktopNav from './DesktopNav';
 import MobileMenu from './MobileMenu';
@@ -55,12 +55,15 @@ const SiteHeader = () => {
               )}
             </Link>
 
-            <Link
-              to="/login"
-              className="hidden items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 lg:inline-flex"
-            >
-              <BsPerson className="mr-2 h-4 w-4" /> Login
-            </Link>
+            <div className="hidden flex-col leading-tight lg:flex">
+              <span className="text-[10px] font-medium text-slate-500">Call us at</span>
+              <a
+                href="tel:9147322205"
+                className="-mt-0.5 text-lg font-semibold text-indigo-950 transition hover:text-sky-600"
+              >
+                914-732-2205
+              </a>
+            </div>
 
             <button
               type="button"

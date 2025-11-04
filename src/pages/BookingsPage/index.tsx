@@ -127,7 +127,7 @@ const BookingsPage = () => {
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-card">
                 <h3 className="text-lg font-semibold text-indigo-950">Need Help?</h3>
                 <p className="mt-3 text-sm text-slate-600">
-                  Call our booking helpline <strong>8904555007</strong> or chat with us for quick updates and approvals.
+                  Call our booking helpline <strong>9147322205</strong> or chat with us for quick updates and approvals.
                 </p>
                 <button type="button" className="btn-primary mt-6 w-full bg-brand-500 text-white hover:bg-brand-600">
                   Chat with support

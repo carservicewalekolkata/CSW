@@ -141,12 +141,12 @@ export const ServicePackages = ({
   };
 
   const handlePhoneSubmit = () => {
-    const trimmed = phoneInput.trim();
-    if (!/^\d{10}$/.test(trimmed)) {
+    const digits = phoneInput.replace(/\D/g, '');
+    if (!/^\d{10}$/.test(digits)) {
       setPhoneError('Enter a valid 10-digit mobile number.');
       return;
     }
-    setCustomerPhone(trimmed);
+    setCustomerPhone(digits);
     if (pendingService) {
       addServiceToCart(mapServiceToCartItem(pendingService));
       setPendingService(null);
@@ -275,12 +275,6 @@ export const ServicePackages = ({
                         >
                           Add to cart
                         </button>
-                        <button
-                          type="button"
-                          className="btn-secondary w-full justify-center border-brand-500 text-brand-600 hover:bg-brand-50"
-                        >
-                          Add to compare
-                        </button>
                       </div>
                       <p className="text-xs text-slate-400">
                         *Note: Prices are estimates. Final cost may vary after physical inspection and customer approval.
@@ -384,15 +378,28 @@ export const ServicePackages = ({
               </p>
               <input
                 type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                pattern="[0-9]{10}"
+                minLength={10}
+                maxLength={10}
+                aria-invalid={!!phoneError}
+                aria-describedby="services-phone-error"
                 value={phoneInput}
                 onChange={(event) => {
-                  setPhoneInput(event.target.value)
-                  setPhoneError(null)
+                  const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 10)
+                  setPhoneInput(digitsOnly)
+                  if (phoneError && /^\d{10}$/.test(digitsOnly)) {
+                    setPhoneError(null)
+                  }
                 }}
                 placeholder="10-digit mobile number"
                 className="mt-4 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-brand-500 focus:outline-none"
+                required
               />
-              {phoneError ? <p className="mt-2 text-xs text-rose-600">{phoneError}</p> : null}
+              {phoneError ? (
+                <p id="services-phone-error" className="mt-2 text-xs text-rose-600">{phoneError}</p>
+              ) : null}
               <div className="mt-6 flex items-center justify-end gap-3">
                 <button
                   type="button"

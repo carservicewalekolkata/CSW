@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { NavLink } from 'react-router-dom';
 import { PiMapPinLineBold } from 'react-icons/pi';
-import { BsCart2, BsPerson } from 'react-icons/bs';
+import { BsCart2 } from 'react-icons/bs';
 import { HiOutlineX } from 'react-icons/hi';
 import clsx from 'clsx';
 import type { NavItem } from './config';
@@ -118,9 +118,9 @@ const MobileMenu = ({
             </div>
 
             <div className="mt-auto space-y-4">
-              <NavLink to="/login" onClick={onClose} className="btn-primary w-full" end>
-                <BsPerson className="mr-2 h-4 w-4" /> Login
-              </NavLink>
+              <a href="tel:9147322205" onClick={onClose} className="btn-primary w-full">
+                Call us at 914-732-2205
+              </a>
               <NavLink to="/cart" onClick={onClose} className="btn-secondary w-full" end>
                 <BsCart2 className="mr-2 h-4 w-4" /> View Cart{cartItems > 0 ? ` (${cartItems})` : ''}
               </NavLink>

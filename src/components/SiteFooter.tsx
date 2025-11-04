@@ -67,8 +67,8 @@ const SiteFooter = () => {
             <ul className="mt-4 space-y-2 text-sm text-slate-600">
               <li className="flex items-start gap-2">
                 <FaPhone size={15} className='text-slate-300' />
-                <a href="tel:8904555007" className="text-slate-300">
-                  8904555007
+                <a href="tel:9147322205" className="text-slate-300">
+                  9147322205
                 </a>
               </li>
               <li className="flex items-center gap-2">
