@@ -52,6 +52,34 @@ const fetchJson = async (url) => {
   return response.json();
 };
 
+const syncVehicleSitemaps = async (backendUrl) => {
+  const url = `${ensureTrailingSlash(backendUrl)}v1/seo/sitemaps`
+  const headers = { 'Content-Type': 'application/json' }
+  const token = (process.env.SITEMAP_SYNC_TOKEN ?? '').trim()
+  if (token) {
+    headers['X-Internal-Token'] = token
+  }
+  // Best-effort: ask backend to rebuild to ensure we fetch fresh data
+  // If this fails, we still proceed to read existing entries.
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ mode: 'rebuild' })
+    })
+    if (!res.ok) {
+      console.warn(`[sitemap] sync request failed: ${res.status} ${res.statusText}`)
+      return
+    }
+    const json = await res.json().catch(() => null)
+    if (!json?.success) {
+      console.warn('[sitemap] sync response indicates failure:', json?.message)
+    }
+  } catch (err) {
+    console.warn('[sitemap] sync request error (continuing with stale data):', err)
+  }
+}
+
 const fetchVehicleSitemapEntries = async (backendUrl) => {
   const params = new URLSearchParams({
     includeInactive: 'false',
@@ -155,6 +183,8 @@ const main = async () => {
   const outputDir = path.join(projectRoot, config.outputDir);
   const sitemapDir = path.join(outputDir, 'sitemaps');
 
+  // Try to rebuild sitemaps before fetching to avoid stale/incomplete lists
+  await syncVehicleSitemaps(config.backendUrl);
   const vehicleEntries = await fetchVehicleSitemapEntries(config.backendUrl);
 
   const staticEntries = collectStaticEntries(config.staticRoutes, config.baseUrl, generatedOn);
