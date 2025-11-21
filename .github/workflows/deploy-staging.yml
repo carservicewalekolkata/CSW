@@ -10,18 +10,15 @@ env:
   NODE_VERSION: 20
   APP_NAME: csw-live
   RESOURCE_GROUP: cswapp-rg
-  SITEMAP_BASE_URL: ${{ secrets.SITEMAP_BASE_URL }}
-  SITEMAP_BACKEND_URL: ${{ secrets.SITEMAP_BACKEND_URL }}
-  SITEMAP_SYNC_TOKEN: ${{ secrets.SITEMAP_SYNC_TOKEN }}
 
 jobs:
   quality-check:
     runs-on: ubuntu-latest
     env:
       VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
-      SITEMAP_BASE_URL: ${{ env.SITEMAP_BASE_URL }}
-      SITEMAP_BACKEND_URL: ${{ env.SITEMAP_BACKEND_URL }}
-      SITEMAP_SYNC_TOKEN: ${{ env.SITEMAP_SYNC_TOKEN }}
+      SITEMAP_BASE_URL: ${{ secrets.SITEMAP_BASE_URL }}
+      SITEMAP_BACKEND_URL: ${{ secrets.SITEMAP_BACKEND_URL }}
+      SITEMAP_SYNC_TOKEN: ${{ secrets.SITEMAP_SYNC_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -49,9 +46,9 @@ jobs:
 
       - name: Generate sitemaps
         env:
-          SITEMAP_BASE_URL: ${{ env.SITEMAP_BASE_URL }}
-          SITEMAP_BACKEND_URL: ${{ env.SITEMAP_BACKEND_URL }}
-          SITEMAP_SYNC_TOKEN: ${{ env.SITEMAP_SYNC_TOKEN }}
+          SITEMAP_BASE_URL: ${{ secrets.SITEMAP_BASE_URL }}
+          SITEMAP_BACKEND_URL: ${{ secrets.SITEMAP_BACKEND_URL }}
+          SITEMAP_SYNC_TOKEN: ${{ secrets.SITEMAP_SYNC_TOKEN }}
         run: npm run generate:sitemaps
 
       - name: Lint code
